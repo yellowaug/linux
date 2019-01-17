@@ -1,0 +1,10 @@
+文件查找
+https://blog.csdn.net/LeeKitch/article/details/80238614
+遍历硬盘盘符
+https://www.bbsmax.com/A/mo5keAXLzw/
+
+windows api 本地查看命令
+wbemtest
+
+wmi windows api
+https://docs.microsoft.com/zh-cn/previous-versions/windows/desktop/secrcw32prov/win32-securitysettingoflogicalshare

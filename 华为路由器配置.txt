@@ -1,0 +1,216 @@
+华为AR2240 NAT ALG 配置ftp映射
+使能 acl ftp
+nat alg ftp enable
+进入接口
+本机为: 
+int g0/0/0
+设置nat映射
+nat static protocol tcp global current-interface 100 inside 192.168.15.10 ftp netmask 255.255.255.255
+端口映射
+port-mapping ftp  port 100 acl 2000
+
+设置telnet登录
+进入系统
+sys
+使能telnet 服务
+telnet server enable
+设置telnet端口
+telnet server port 1100
+配置telnet用户登陆界面
+user-interface vty 0 4 #进入vty用户界面视图
+authentication-mode aaa #用户验证方式 aaa
+quit
+配置aaa验证
+aaa 进入aaa视图
+local-user huawei password cipher huawei#设置登陆用户和密码
+local-user huawei privilege level 15 #配置用户级别
+local-user huawei service-type telnet#配置用户登陆方式
+quit
+
+
+
+华为AR1220上网配置
+配置思路
+
+AR配置PPPoE拨号上网示例
+ 
+适用于：同时带以太WAN口和以太LAN口的机型，本示例以AR1220为例。
+
+业务需求：
+
+运营商分配的PPPoE用户名为user1，密码为huawei123。
+
+实现内网用户通过路由器访问外网。
+
+组网规划：
+
+WAN口GE1连接外网。
+
+LAN口连接内网，内网的网段为192.168.1.0/24。
+
+内网用户获取IP的方式：DHCP（动态获取IP）。
+
+操作步骤：
+
+一、WAN侧配置
+
+1. 配置PPPoE拨号接口
+
+<AR> system-view                                                                                      //先从用户视图切换到系统视图再进行配置
+
+[AR] interface dialer 1                                                                                  //创建并进入Dialer接口
+
+[AR-Dialer1] dialer user abc                                                                         //启动共享DCC功能
+
+ [Router-Dialer1] dialer-group 1
+
+[Router-Dialer1] dialer bundle 1
+
+[AR-Dialer1] dialer number 1 autodial                                                           //配置拨号失败时将dialer接口状态转换为Down
+
+说明：为匹配服务器端配置的CHAP或PAP两种不同认证方式，下面同时配置CHAP和PAP两种认证方式的用户名和密码
+
+[AR-Dialer1] ppp chap user user1                                                                 //配置CHAP认证方式的用户名
+
+[AR-Dialer1] ppp chap password cipher huawei123                                       //配置CHAP认证方式的密码
+
+[AR-Dialer1] ppp pap local-user user1 password cipher huawei123                //配置PAP认证方式的用户名和密码
+
+[AR-Dialer1] tcp adjust-mss 1200                                                                //配置接口的TCP最大报文段长度为1200字节
+
+[AR-Dialer1] ip address ppp-negotiate
+
+[AR-Dialer1] ppp ipcp dns admit-any
+
+[AR-Dialer1] quit
+
+[AR] interface gigabitethernet 0/0/1                                                             //进入WAN口（GE1）建立PPPoE会话
+
+[AR-GigabitEthernet0/0/1] pppoe-client dial-bundle-number 1                       //dial-bundle-number编号需要和dialer bundle编号一致
+
+[AR-GigabitEthernet0/0/1] quit
+
+2. 配置默认路由
+
+[AR] ip route-static 0.0.0.0 0.0.0.0 dialer 1
+
+3. 配置NAT功能
+
+[AR] acl number 3000
+
+[AR-acl-adv-3000] rule permit ip
+
+[AR-acl-adv-3000] quit
+
+[AR] interface dialer 1
+
+[AR-Dialer1] nat outbound 3000
+
+[AR-Dialer1] quit
+
+二、LAN侧配置
+
+配置接口IP和DHCP服务器（为PC分配IP）
+
+说明：LAN口是二层接口不能直接配置IP，由于它默认属于VLAN 1，需要为其创建VLANIF1接口再配置IP。
+
+[AR] dhcp enable                                                                                        //打开DHCP总开关
+
+[AR] interface vlanif 1                                                                                  //创建VLANIF1接口，并配置IP和子网掩码
+
+[AR-Vlanif1] ip address 192.168.1.1 255.255.255.0
+
+[AR-Vlanif1] dhcp select interface                                                                 //启用接口地址池方式的DHCP服务器功能
+
+[AR-Vlanif1] dhcp server dns-list 114.114.114.114                                          //配置DNS服务器为公共的DNS（114.114.114.114）
+
+[AR-Vlanif1] return
+
+6. 验证配置结果
+
+执行命令display pppoe-client session summary查看PPPoE会话的状态和配置信息。根据显示信息判断会话状态是否正常（状态为up表示正常）、配置是否正确（是否和之前的数据规划和组网一致）。
+
+[Router] display pppoe-client session summary
+
+PPPoE Client Session:
+
+ID   Bundle  Dialer  Intf             Client-MAC    Server-MAC    State
+
+1    1       1       GE2/0/0          00e0fc030201  0819a6cd0680  UP
+
+配置pppoe上网实例
+
+https://forum.huawei.com/enterprise/zh/thread-408177-1-1.html
+
+日常检查用到的命令
+
+查看系统管理员账号
+aaa
+dis this
+quit
+
+查看功率信息
+display power system
+
+查看温度信息
+display temperature slot fan
+
+查看风扇状态
+display fan
+
+查看CPU统计信息
+dis cpu-usage
+
+查看内存使用率
+dis memory-usage
+
+查看接口使用率
+dis int brief
+
+查看整机配置信息
+dis cur 
+
+display常用命令行
+http://support.huawei.com/enterprise/docinforeader!loadDocument1.action?contentId=DOC1000019409&partNo=10082#dc_cfg_disp_0017
+
+配置VPN
+设置L2PT VPN步骤
+#
+ sysname LNS
+#
+ l2tp enable                               //启用L2TP功能
+#
+acl number 2001                           //配置ACL，进行NAT转换使用，将L2TP分配的地址进行NAT
+ rule 5 permit source 192.168.1.0 0.0.0.255
+#
+ip pool lns                              //创建IP地址池，名称为lns，为接入用户分配IP地址
+ gateway-list 192.168.1.1
+ network 192.168.1.0 mask 255.255.255.0
+#
+aaa                                      //配置L2TP拨入的用户名密码
+ authentication-scheme lmt                                                      
+ domain huawei.com
+  authentication-scheme lmt
+ local-user 123456789@huawei.com password cipher %^%#_<`.CO&(:LeS/$#F\H0Qv8B]KAZja3}3q'RNx;VI%^%#
+ local-user 123456789@huawei.com privilege level 0  
+ local-user 123456789@huawei.com service-type ppp
+#
+interface GigabitEthernet1/0/0
+ ip address 202.1.1.1 255.255.255.0
+ nat outbound 2001                       //配置NAT功能，实现公网访问功能
+#
+interface Virtual-Template1              //创建VT虚拟接口模板，配置拨号参数
+ ppp authentication-mode chap domain huawei.com   //配置认证方式时必须携带域名
+ remote address pool lns
+ ppp ipcp dns 10.10.10.10                //分配DNS网关，以便员工使用域名访问外网资源
+ ip address 192.168.1.1 255.255.255.0
+#
+l2tp-group 1                             //创建L2TP组，配置L2TP连接参数
+ undo tunnel authentication              //PC拨入，建议使用不认证的方式
+ allow l2tp virtual-template 1
+#
+ip route-static 0.0.0.0 0.0.0.0 202.1.1.2
+#
+return
+教程地址
+http://support.huawei.com/hedex/hdx.do?docid=EDOC1000069154&lang=zh

@@ -1,0 +1,45 @@
+在注册表中查看本机已安装软件
+注册表的值是：
+32位系统存在以下位置：
+HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall
+HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall
+
+64位系统在32位系统上多出一处，也就是WOW6432Node的节点下
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall
+
+这几处位置下面的每一项都代表系统中的一个软件或补丁，但是有例外情况：
+1.如果注册表项下面有"SystemComponent"字段并且值等于1时，表示这是个系统组件，而不是应用软件。
+2.如果注册表项下面有"ParentKeyName"字段则表示该项是系统更新。
+
+windows卸载命令
+https://yq.aliyun.com/articles/131720
+msiexec.exe 
+常用选型：
+显示选项
+	/quiet
+		安静模式，无用户交互
+	/passive
+		无人参与模式 - 只显示进度栏
+	/q[n|b|r|f]
+		设置用户界面级别
+		n - 无用户界面
+		b - 基本界面
+		r - 精简界面
+		f - 完整界面(默认值)
+	/help
+		帮助信息
+重新启动选项
+	/norestart
+		安装完成后不重新启动
+	/promptrestart
+		必要时提示用户重新启动
+	/forcerestart
+		安装后始终重新启动计算机
+		
+windows日志存放地址：
+C:\Windows\System32\winevt\Logs
+https://blog.csdn.net/holandstone/article/details/7645709
+
+windows 清空连接数的方法
+net session /delete /y
+打印机服务器上再添加计划任务，每15分钟定时清除

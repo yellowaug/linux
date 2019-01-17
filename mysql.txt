@@ -1,0 +1,68 @@
+﻿mysql5.7.22 windows 安装方法
+https://blog.csdn.net/baidu_38116275/article/details/80516953
+
+常用命令
+show databases ;显示数据库
+show tables ;显示表
+create database accesslist;建数据库
+use ipdata;使用数据库
+desc account_list;查看表结构
+创建表
+create table if not exists zljobinfo( 
+  id int(10) unsigned auto_increment,
+  companyname varchar(200) not null ,
+  companytype varchar(20) not null,
+  companysize varchar(20) not null,
+  postioname varchar(20) not null ,
+  postdescurl varchar(200) not null,
+  workexp  varchar(10) not null ,
+  walfare varchar(50) not null ,
+  wagemoney int(10) not null,
+  worklocation varchar(10) not null,
+  update varchar(20) not null
+  primary key (id)
+)engine =InnoDB default  charset =utf8;
+增加表的字段:
+  alter add命令格式：alter table 表名 add字段 类型 其他;
+  例如，在表MyClass中添加了一个字段passtest，类型为int(4)，默认值为0：
+  mysql> alter table MyClass add passtest int(4) default '0';
+
+drop table test;删除数据库
+ SQL DELETE 命令中使用 WHERE 子句来删除 MySQL 数据表 runoob_tbl 所选的数据
+ mysql> use RUNOOB;
+Database changed
+mysql> DELETE FROM runoob_tbl WHERE runoob_id=3;
+Query OK, 1 row affected (0.23 sec)
+
+清空表数据：
+删除表信息的方式有两种 :
+truncate table table_name;
+delete * from table_name;
+注 : truncate操作中的table可以省略，delete操作中的*可以省略
+truncate、delete 清空表数据的区别 :
+1> truncate 是整体删除 (速度较快)，delete是逐条删除 (速度较慢)
+2> truncate 不写服务器 log，delete 写服务器 log，也就是 truncate 效率比 delete高的原因
+3> truncate 不激活trigger (触发器)，但是会重置Identity (标识列、自增字段)，相当于自增列会被置为初始值，又重新从1开始记录，而不是接着原来的 ID数。
+而 delete 删除以后，identity 依旧是接着被删除的最近的那一条记录ID加1后进行记录。如果只需删除表中的部分记录，只能使用 DELETE语句配合 where条件
+
+
+查看mysql日志
+打开日志的方法以及时间
+https://blog.csdn.net/defonds/article/details/46858949
+show variables like 'log_%';
+查看mysql通用日志
+SHOW VARIABLES LIKE 'general%';
+一般都是没有开启
+开启日志的方法
+set GLOBAL general_log='ON';
+
+
+mysql c api 安装方法
+开发环境搭建
+https://blog.csdn.net/xyang81/article/details/26814633
+https://blog.csdn.net/bkjs626/article/details/80621514(在家里按这个方法编译成功）
+编译报错
+http://www.voidcn.com/article/p-cojtuslx-bpg.html
+mysql c api 中文文档
+http://www.mysqlab.net/docs/view/refman-5.1-zh/chapter/apis.html
+

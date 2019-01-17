@@ -1,0 +1,40 @@
+设置L2PT VPN步骤
+#
+ sysname LNS
+#
+ l2tp enable                               //启用L2TP功能
+#
+acl number 2001                           //配置ACL，进行NAT转换使用，将L2TP分配的地址进行NAT
+ rule 5 permit source 192.168.1.0 0.0.0.255
+#
+ip pool lns                              //创建IP地址池，名称为lns，为接入用户分配IP地址
+ gateway-list 192.168.1.1
+ network 192.168.1.0 mask 255.255.255.0
+#
+aaa                                      //配置L2TP拨入的用户名密码
+ authentication-scheme lmt                                                      
+ domain huawei.com
+  authentication-scheme lmt
+ local-user 123456789@huawei.com password cipher %^%#_<`.CO&(:LeS/$#F\H0Qv8B]KAZja3}3q'RNx;VI%^%#
+ local-user 123456789@huawei.com privilege level 0  
+ local-user 123456789@huawei.com service-type ppp
+#
+interface GigabitEthernet1/0/0
+ ip address 202.1.1.1 255.255.255.0
+ nat outbound 2001                       //配置NAT功能，实现公网访问功能
+#
+interface Virtual-Template1              //创建VT虚拟接口模板，配置拨号参数
+ ppp authentication-mode chap domain huawei.com   //配置认证方式时必须携带域名
+ remote address pool lns
+ ppp ipcp dns 10.10.10.10                //分配DNS网关，以便员工使用域名访问外网资源
+ ip address 192.168.1.1 255.255.255.0
+#
+l2tp-group 1                             //创建L2TP组，配置L2TP连接参数
+ undo tunnel authentication              //PC拨入，建议使用不认证的方式
+ allow l2tp virtual-template 1
+#
+ip route-static 0.0.0.0 0.0.0.0 202.1.1.2
+#
+return
+教程地址
+http://support.huawei.com/hedex/hdx.do?docid=EDOC1000069154&lang=zh

@@ -1,0 +1,869 @@
+网络IP设置
+==========================================================================================================
+CentOS6.8设置
+linux 与 linux互传文件
+yum install openssh-clients -y
+格式 scp -r $源文件主机用户名@$源文件主机:$源文件路径 $下载路径
+例子 scp -r root@192.168.16.254:/home/vmiso/virtio-win-0.1.160.iso /home/disk1/vmiso/ 
+	 scp -r root@192.168.15.251:/home/redisrun.sh /home/
+	 scp -r root@192.168.16.250:/root/.vim /root
+
+设置SSH
+设置SSH开机启动
+chkconfig --level 2345 sshd on
+chkconfig sshd on
+chkconfig --list sshd
+修改配置文件
+vim /etc/ssh/sshd_config
+修改运行ROOT登录
+
+centos6设置固定IP
+查看IP配置文件
+cd /etc/sysconfig/network-scripts
+在VM中发现与网上说的不太一样
+没有ifcfg-eth0,只有ifcfg-lo
+修复方法
+创建ifcfg-eth0文件 vim /etc/sysconfig/network-scripts/ifcfg-eth0
+复制以下内容：
+DEVICE=eth0
+BOOTPROTO=static
+IPADDR=192.168.15.239	
+NETMASK=255.255.255.0
+GATEWAY=192.168.15.1
+DNS1=202.103.224.68
+DNS2=114.114.114.114
+IPV6INIT=no
+HWADDR=00:0C:29:50:01:D1
+NM_COnTROLLED=no      
+ONBOOT=yes
+TYPE=Ethernet
+
+获取Hwaddr
+ifconfig
+切换网络工作模式：
+设置开机启动network
+chkconfig network on
+启动network
+service network start
+停止networkmanager
+chkconfig networkmanager off
+service networkmanager stop
+重启机器，查看配置是否成功
+更改DNS
+vim /etc/resolv.conf
+更改为 202.103.224.68
+==========================================================================================================
+安装JDK，Mysql的方法
+==========================================================================================================
+centos6.8 安装JDK1.8解压版
+先去官网下个JDK
+解压tar.gz包：
+tar -zxvf jdkxxx.tar.gz
+配置环境变量：
+vim /etc/profile
+在文件末端添加以下内容：
+JAVA_HOME=/home/tool/jdk1.8.0_161
+JRE_HOME=/home/tool/jdk1.8.0_161/jre
+CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar:$JRE_HOME/lib
+PATH=$JAVA_HOME/bin:$PATH
+export PATH JAVA_HOME CLASSPATH
+保持退出后并编译
+source /etc/profile
+
+centos6.8 解压安装mysql5.6
+2、卸载系统自带的Mariadb
+rpm -qa|grep mariadb         //查询出已安装的mariadb
+rpm -e --nodeps 文件名      //卸载 ， 文件名为使用rpm -qa|grep mariadb 命令查出的所有文件
+3、删除etc目录下的my.cnf文件
+       rm /etc/my.cnf
+4、 执行以下命令来创建mysql用户组
+groupadd mysql
+5、执行以下命令来创建一个用户名为mysql的用户并加入mysql用户组
+useradd -g mysql mysql
+6、将下载的二进制压缩包放到/usr/local/目录下。
+7、解压安装包
+tar -zxvfmysql-5.6.36-linux-glibc2.5-x86_64.tar.gz
+8、将解压好的文件夹重命名为mysql
+9、在etc下新建配置文件my.cnf，并在该文件内添加以下代码：
+[mysql]
+# 设置mysql客户端默认字符集
+default-character-set=utf8
+socket=/var/lib/mysql/mysql.sock
+[mysqld]
+skip-grant-tables #跳过密码登录，用于初次登录，后面记得删掉
+skip-name-resolve
+#设置3306端口
+port=3306
+socket=/var/lib/mysql/mysql.sock
+# 设置mysql的安装目录
+basedir=/usr/local/mysql
+# 设置mysql数据库的数据的存放目录
+datadir=/usr/local/mysql/data
+# 允许最大连接数
+max_connections=200
+# 服务端使用的字符集默认为8比特编码的latin1字符集
+character-set-server=utf8
+# 创建新表时将使用的默认存储引擎
+default-storage-engine=INNODB
+lower_case_table_names=1
+max_allowed_packet=16M
+10、创建步骤9中用到的目录并将其用户设置为mysql
+mkdir /var/lib/mysql
+mkdir /var/lib/mysql/mysql
+chown -R mysql:mysql /var/lib/mysql
+chown -R mysql:mysql /var/lib/mysql/mysql
+11、进入安装mysql软件目录
+cd /usr/local/mysql
+chown -R mysql:mysql ./　　                             #修改当前目录拥有者为mysql用户
+./scripts/mysql_install_db --user=mysql         #安装数据库
+bin/mysqld --initialize --user=mysql --basedir=/home/tools/mysql57 --datadir=/home/tools/mysql57/data #5.7版本用这个命令
+chown -R mysql:mysql data                              #修改当前data目录拥有者为mysql用户
+ 
+到此数据库安装完毕！
+
+二、配置MySQL
+1、授予my.cnf的最大权限。
+chown 777 /etc/my.cnf
+设置开机自启动服务控制脚本：
+2、复制启动脚本到资源目录
+cp ./support-files/mysql.server /etc/rc.d/init.d/mysqld
+3、增加mysqld服务控制脚本执行权限
+chmod +x /etc/rc.d/init.d/mysqld
+4、将mysqld服务加入到系统服务
+chkconfig --add mysqld
+5、检查mysqld服务是否已经生效
+chkconfig --list mysqld
+命令输出类似下面的结果：
+mysqld 0:off 1:off 2:on 3:on 4:on 5:on 6:off
+表明mysqld服务已经生效，在2、3、4、5运行级别随系统启动而自动启动，以后可以使用service命令控制mysql的启动和停止。
+6、启动msql（停止mysqld服务：service mysqld stop）
+service mysqld start
+7、将mysql的bin目录加入PATH环境变量，编辑/etc/profile文件
+vi /etc/profile
+在文件最后添加如下信息：
+export PATH=$PATH:/usr/local/mysql/bin
+执行下面的命令使所做的更改生效：
+. /etc/profile
+8、以root账户登陆mysql，默认是没有密码
+mysql -u root -p
+如果是第一次登录mysql,执行以下命令行
+set passwrod = 'new password';
+9、设置root账户密码 注意下面的you password改成你的要修改的密码（记住，这里只是允许本机连接，配置成%即是允许多个ip连接上来）
+use mysql
+update user set password=password('hjc') where user='root'and host='localhost';
+update mysql.user set authentication_string=password('hjc') where user='root' ;
+10、设置远程主机登录，注意下面的your username 和 your password改成你需要设置的用户和密码
+GRANT ALL PRIVILEGES ON *.* TO'root'@'%' IDENTIFIED BY 'hjc' WITH GRANT OPTION;
+FLUSH PRIVILEGES ;
+11、如果登录不上了，在[mysqld]的段中加上一句：skip-grant-tables 保存并且退出vi
+
+安装上传以及下载工具
+yum install -y lrzsz
+http://repo.zabbix.com/zabbix/3.4/rhel/6/x86_64/zabbix-agent-3.4.0-1.el6.x86_64.rpm
+
+==========================================================================================================
+tomcat的安装方法
+==========================================================================================================
+下载地址：http://tomcat.apache.org/download-80.cgi
+安装前提
+系统必须已安装配置JDK8
+（1）解压                  
+ tar -zxvf apache-tomcat-8.0.44.tar.gz  
+ # 解压成功后得到 apache-tomcat-8.0.44 文件夹，更名为tomcat7
+ mv apache-tomcat-8.0.44 tomcat8
+ （2）配置环境变量
+ vim  ~/.bashrc 
+ #在文件最后加上以下配置
+ #tomcat evn
+ CATALINA_HOME=/home/austin/bin/tomcat8
+ export CATALINA_HOME
+ #保存 退出后执行下面的命令,使其生效
+ source ~/.bashrc
+
+（3）配置tomcat的catalina.sh文件
+ #进入tomcat的安装目录
+ cd /home/austin/bin/tomcat8/bin
+ vi catalina.sh
+ 
+ #找到 # OS specific support，然后在这行下面添加以下配置
+ # OS specific support.  $var _must_ be set to either true or false.
+ CATALINA_HOME=/home/austin/bin/tomcat8
+ JAVA_HOME=/home/austin/bin/jdk1.8.0_40
+ #保存退出
+
+（4）修改默认端口号(如没有需求，可不修改)
+ #进入tomcat的配置目录
+ cd /home/austin/bin/tomcat8/conf
+ vim server.xml
+
+ ## 输入/8080 找到默认端口配置，修改成自定义配置
+
+    <Connector port="8086" protocol="HTTP/1.1"
+               connectionTimeout="20000"
+               redirectPort="8443" />
+    <!-- A "Connector" using the shared thread pool-->
+    <!--
+    <Connector executor="tomcatThreadPool"
+               port="8086" protocol="HTTP/1.1"
+               connectionTimeout="20000"
+               redirectPort="8443" />
+    -->
+
+（5）安装tomcat服务（可选）
+ ## 需要sudoer权限
+ cd $CATALINA_HOME/bin 
+ cp catalina.sh /etc/init.d/tomcat
+
+（6）启动服务
+ # 如果安装了tomcat服务
+ # 启动
+ service tomcat start
+ #停用
+ service tomcat stop
+
+ # 如果未安装tomcat服务
+ # 启动
+ $CATALINA_HOME/bin/startup.sh 
+ #停用
+ $CATALINA_HOME/bin/shutdown.sh
+
+启动成功， 命令行可看到：
+ Using CATALINA_BASE:   /home/austin/bin/tomcat8
+ Using CATALINA_HOME:   /home/austin/bin/tomcat8
+ Using CATALINA_TMPDIR: /home/austin/bin/tomcat8/temp
+ Using JRE_HOME:        /home/austin/bin/jdk1.8.0_40
+ Using CLASSPATH:       /home/austin/bin/tomcat8/bin/bootstrap.jar:/home/austin/bin/tomcat8/bin/tomcat-juli.jar
+ Tomcat started.
+
+==========================================================================================================
+redis的安装方法
+==========================================================================================================
+
+centos6安装redits
+解压安装包 tar-zxvf /$redits-filename
+安装依赖
+yum install gcc-c++
+进入redits文件目录：make
+如果报错：
+zmalloc.h:50:31: error: jemalloc/jemalloc.h: No such file or directory
+zmalloc.h:55:2: error: #error "Newer version of jemalloc required"
+make[1]: *** [adlist.o] Error 1
+make[1]: Leaving directory `/data0/src/redis-2.6.2/src'
+make: *** [all] Error 2
+则运行：
+make MALLOC=libc
+安装完成后运行
+make test 测试
+运行make test 报错
+You need tcl 8.5 or newer in order to run the Redis test
+wget http://downloads.sourceforge.net/tcl/tcl8.6.1-src.tar.gz 下载TCL压缩包
+tar xzvf tcl8.6.1-src.tar.gz 解压
+mv tcl8.6.1 /home/tool/redis 将tcl移动到redis文件内
+cd /home/tool/redis4/unix 进入安装目录
+sudo ./configure
+sudo make
+sudo make install  
+配置redits
+在以下目录下创建文件夹
+mkdir /etc/redis
+mkdir /var/redis
+mkdir /var/redis/log
+mkdir /var/redis/run
+mkdir /var/redis/6379
+在redis解压文件下复制一份配置文件到 /etc/redis下
+cp redis.conf /etc/redis/6378.conf
+修改配置文件6379.conf
+vim /etc/redis/6378.conf
+修改以下内容
+daemonize yes    //将redis服务设成守护进程
+requirepass 123456    //设置认证密码
+bind 0.0.0.0    //设置监听所有ip，默认为bind 127.0.0.1，只监听本机ip，其他主机无法访问此redis，因为我要远程操作redis，所以暂时改成0.0.0.0
+protected-mode no    //关闭保护模式，默认启用保护模式，同样要想远程访问redis，必须设成no
+pidfile /var/redis/run/redis_6378.pid
+logfile /var/redis/log/redis_6378.log
+dir /var/redis/6379
+使用6379.conf启动redis服务
+redis-server /etc/redis/6379.conf
+复制redis启动脚本到/etc/init.d目录
+cp /home/redist-4.0.2/utlis/redis_init_script /etc/init.d/redis
+需要修改的内容：
+# chkconfig:   2345 90 10 #头文件加上
+REDISPORT=6379
+EXEC=/usr/local/bin/redis-server
+#CLIEXEC=/usr/local/bin/redis-cli
+CLIEXEC=/etc/redis/redis-cli
+PIDFILE=/var/redis/run/redis_${REDISPORT}.pid #要修改成6379.conf一样的路径地址
+CONF="/etc/redis/${REDISPORT}.conf"#要修改成6379.conf一样的路径地址
+PID=$(cat $PIDFILE)
+echo "Stopping ..."
+$CLIEXEC -a "123456" -p $REDISPORT shutdown #在这添加上密码
+while [ -x /proc/${PID} ]
+do
+echo "Waiting for Redis to shutdown ..."
+sleep 1
+done
+echo "Redis stopped"
+保存文件并退出
+设置开机启动项
+chkconfig redis on
+设置防火墙
+vim /etc/sysyconfig/iptables
+添加一行
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 6379 -j ACCEPT
+重启防火墙
+service iptables restart
+结束redis进程
+kill -I $pid
+登录redis客户端
+redis-cli -h $hostip -p $hostport -a $password
+
+配置 redis集群
+创建节点目录
+mkdir /usr/local/redis_cluster
+mkdir -p /usr/local/redis_cluster/{7003 7004 7005}
+创建7000节点为例，拷贝到7000目录
+cp /home/redis-4.0.1/redis.conf  /usr/local/redis_cluster/7000/7000.conf   
+拷贝到7001目录
+cp /home/redis-4.0.1/redis.conf  ./redis_cluster/7001/7001.conf   
+拷贝到7002目录
+cp /home/redis-4.0.1/redis.conf  ./redis_cluster/7002/7002.conf  
+分别对7001，7002、7003文件夹中的3个文件修改对应的配置
+编辑/etc/redis/%filename.conf
+修改以下内容：
+daemonize    yes                          //redis后台运行
+pidfile  /var/run/redis_7000.pid          //pidfile文件对应7000,7002,7003
+port  7000                                //端口7000,7002,7003
+cluster-enabled  yes                      //开启集群  把注释#去掉
+cluster-config-file  nodes_7000.conf      //集群的配置  配置文件首次启动自动生成 7000,7001,7002
+cluster-node-timeout  5000                //请求超时  设置5秒够了
+appendonly  yes                           //aof日志开启  有需要就开启，它会每次写操作都记录一条日志
+bing 0.0.0.0
+在192.168.137.100创建3个节点：对应的端口改为7003,7004,7005.配置对应的改一下就可以了
+开启redis集群
+redis-server ./$prot.conf
+查看redis集群是否启动成功
+ps -ef | grep redis
+安装ruby 
+sudo yum install -y curl \
+&& gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB \
+&& \curl -sSL https://get.rvm.io | bash -s stable \
+&& source /etc/profile.d/rvm.sh \
+&& rvm install ruby-2.4.1 \
+&& rvm use 2.4.1 default \
+&& gem install redis
+查找配置文件 find / -name rvm.sh 
+配置文件生效 source /etc/profile.d/rvm.sh 
+下载rvm依赖 rvm requirements 
+查看rvm库ruby版本 rvm list known
+安装ruby指定版本 rvm install ruby-2.4.1
+使用ruby版本默认 rvm use 2.4.1 default
+gem install redis
+/usr/local/redis/src/redis-trib.rb create --replicas 1 \
+192.168.16.235:7000 192.168.16.235:7001 192.168.16.235:7002 \
+192.168.16.236:7003 192.168.16.236:7004 192.168.16.236:7005
+查看节点信息
+cluster info
+cluster nodes
+redis-cli -c -p 7000
+==========================================================================================================
+centos6安装openoffice
+==========================================================================================================
+#tar zxvf Apache_OpenOffice_4.1.2_Linux_x86-64_install-rpm_zh-CN.tar.gz
+
+解压后的目录是zh-CN，里面有RPMS、readmes、licenses。
+
+2、进入RPMS目录　
+
+3、执行　rpm -ivh *rpm（安装所有rpm文件）
+
+4、进入到RPMS/desktop-integration目录，选择安装相关的套件，我选择的是redhat
+
+#rpm -ivh openoffice4.1.2-redhat-menus-4.1.2-9782.noarch.rpm
+
+这时openOffice己经安装完成，默认会安装在/opt下
+
+5、启动openOffice服务　
+
+临时启动： /opt/openoffice4/program/soffice -headless -accept="socket,host=127.0.0.1,port=8100;urp;" -nofirststartwizard
+
+ 一直后台启动：nohup  /opt/openoffice4/program/soffice -headless -accept="socket,host=127.0.0.1,port=8100;urp;" -nofirststartwizard &
+
+6、查看openoffice　默认的服务端口是否正常启用
+
+# netstat -tlnp |grep 8100
+
+tcp        0      0 127.0.0.1:8100              0.0.0.0:*                   LISTEN      56236/soffice.bin   
+
+==========================================================================================================
+debian9的安装配置以及使用
+==========================================================================================================
+debian9安装配置
+更改更新源：
+deb http://mirrors.aliyun.com/debian stretch main contrib non-free
+deb http://mirrors.aliyun.com/debian stretch-proposed-updates main contrib non-free
+deb http://mirrors.aliyun.com/debian stretch-updates main contrib non-free
+deb-src http://mirrors.aliyun.com/debian stretch main contrib non-free
+deb-src http://mirrors.aliyun.com/debian stretch-proposed-updates main contrib non-free
+deb-src http://mirrors.aliyun.com/debian stretch-updates main contrib non-free
+deb http://mirrors.aliyun.com/debian-security/ stretch/updates main non-free contrib
+deb-src http://mirrors.aliyun.com/debian-security/ stretch/updates main non-free contrib
+运行命令：
+apt-get clean all && apt-get update -y && apt-get upgrade -y && apt-get install vim sudo -y
+
+安装vim sudo
+apt-get install vim sudo
+
+
+解决debian9无GUI界面中文乱码问题
+apt-get install locales -y && dpkg-reconfigure locales
+配置编码进入选择：(空格键是选择，选择完了后Tab切换到OK，再ENTER确认）
+en_US.UTF8
+zh_CN GB2312
+zh_CN GBK GBK
+zh_CN UTF-8 UTF-8
+修改locale文件
+$ /etc/default/locale
+LANG=en_US.UTF-8
+如果还有方块需要装字体：
+$ apt-get install ttf-arphic-uming
+$ apt-get install ttf-wqy-zenhei
+$ reboot
+
+debian9 设置固定IP
+修改/etc/network/interfaces
+vim /etc/network/interfaces
+修改内容：
+auto lo
+iface lo inet loopback
+auto  enp0s31f6#网卡
+iface enp0s31f6 inet static
+address 192.168.13.167 
+netmask 255.255.255.0
+gateway  192.168.13.1
+auto  eno1#双网卡设置 不用设置网关
+iface eno1 inet static
+address 192.168.1.112 
+netmask 255.255.255.0
+
+设置DNS
+修改/etc/resolv.conf
+nameserver = 202.103.224.68 //DNS1
+nameserver = 114.114.114.114 //DNS2
+重启服务
+service networking restart
+==========================================================================================================
+debian9创建，配置，维护kvm虚拟机
+==========================================================================================================
+debian9 安装KVM并创建虚拟机
+安装kvm/qemu，安装libvirt，安装vnc viewer
+apt-get install -y qemu-kvm qemu uml-utilities libvirt-clients libvirt-dev virtinst libvirt-daemon-system（最后一个一定要装，网上的教程太老了，不装是无法创建虚拟机的）
+安装网桥管理工具
+apt-get install -y bridge-utils
+加载kvm 内核
+modprobe kvm
+modprobe kvm-intel
+lsmod | grep kvm#查看内核
+
+设置虚拟机网络
+NAT网络模式
+先查看虚拟机网络
+virsh net-list --all
+假如不小心通过brctl（用于管理桥接网络的工具）删除了default网络，可以通过重新加载预置的XML文件来恢复：
+sudo virsh net-define /usr/share/libvirt/networks/default.xml  #重新定义网络
+udo virsh net-autostart default  #设置default开机自动启动
+sudo virsh net-start default  #启动网络default
+sudo virsh net-info default   #查看default网络信息
+NAT模式下虚拟主机可以连外网，但外界无法访问该虚拟主机，其实如果你使用NAT方式上网，
+可以直接不用做任何设置就可以让虚拟机上网。这些命令是为了后面设置桥接网格时有个基础，如果遇到问题也好知道从哪里下手查找问题。
+
+配置桥接模式
+vim /etc/network/interfaces
+删除要桥接的相关网卡的配置，如下命所示
+source /etc/network/interfaces.d/*
+# The loopback network interface
+auto lo
+iface lo inet loopback
+# The primary network interface
+#allow-hotplug eno1
+auto eno1
+#iface eno1 inet dhcp
+iface eno1 inet static
+address 192.168.16.250
+netmask 255.255.255.0
+gateway 192.168.16.1
+#auto eno2
+#iface eno2 inet dhcp
+auto br0
+iface br0 inet dhcp
+bridge_ports enp0s31f6
+bridge_stp off
+bridge_waitport 0
+bridge_fd 0
+重启网络服务
+service networking restart
+查看配置情况
+ip addr 
+service networking status
+
+创建虚拟机如果报错，重启计算机即可
+创建windows7 vm
+virt-install \
+--virt-type=kvm \
+--name=szh-win-1 \ 
+--ram=4096  \
+--vcpus=2 \
+--os-variant=windows \
+--hvm \
+--cdrom=/home/disk1/vmiso/cn_windows_server_2016_x64_dvd_9718765.iso \
+--network=bridge=br0,model=virtio \
+--graphics vnc,listen=0.0.0.0 \
+--disk path=/home/disk1/vmlist/debian_vm_win1.qcow2,size=400,bus=ide,format=qcow2
+安装 virtio windows 驱动
+手动申请一块硬盘给该虚拟机挂上，并把下载的iso也挂载在该虚拟机上
+qemu-img create -f qcow2 debian_vm_win2016_disk3.qcow2 1024G
+修改$VMname的libvirt的配置文件。
+virsh edit $VMname
+增加如下内容：
+<disk type='file' device='disk'> 
+  <driver name='qemu' type='qcow2'/>
+  <source file='/var/lib/windows-virtio/win7-32.img'/>
+  <target dev='hda' bus='ide'/> 
+</disk>
+<disk type='file' device='disk'>
+  <driver name='qemu' type='qcow2'/>
+  <source file='/home/disk2/vmlist/debian_vm_win2016_disk4.qcow2'/>
+  <target dev='vdf' bus='virtio'/>
+</disk>
+<disk type='file' device='cdrom'>
+  <driver name='qemu' type='raw'/>
+  <source file='/var/lib/windows-virtio/virtio-win-0.1.160.iso'/>
+  <target dev='hdc' bus='ide'/>
+</disk>
+其中cdrom是为了挂载iso文件，以便安装virtio的驱动。而fake.img是为了让win能识别需要安装virtio的驱动。 
+网卡部分直接新增<model type='virtio'/>就好了 
+重启虚拟机使用vnc 连接windows 从cdrom里面找到相应的驱动进行安装
+更新xml文件，删掉新添加的磁盘信息，并使原disk更新为SCSI格式
+<disk type='file' device='disk'> 
+  <driver name='qemu' type='qcow2'/>
+  <source file='/var/lib/windows-virtio/win7-32.img'/>
+  <target dev='vda' bus='virtio'/> 
+</disk>
+改完后，用virsh命令destroy并start重启。在设备管理器发现原硬盘项和网卡已变成virtio模式，安装成功！
+
+KVM安装windows的第二种方法
+创建windows7 vm
+virt-install \
+--virt-type=kvm \
+--name=s1-win_2 \
+--ram=4096  \
+--vcpus=4 \
+--os-variant=windows \
+--hvm \
+--cdrom=/home/disk1/vmiso/cn_windows_server_2016_x64_dvd_9718765.iso \
+--network=bridge=br0,model=virtio \
+--graphics vnc,listen=0.0.0.0 \
+--disk path=/home/disk1/vmlist/debian_vm_win2.qcow2,size=1024,bus=virtio,format=qcow2
+
+加载virtio驱动镜像：
+virsh attach-disk s1-win_2 /home/disk1/vmiso/virtio-win-0.1.160.iso hda --type cdrom --mode readonly
+重新加载win7系统镜像安装系统：
+virsh attach-disk s1-win_2 /home/vmiso/cn_windows_7_ultimate_with_sp1_x64_dvd_u_677408.iso hda --type cdrom --mode readonly
+成功附加磁盘
+win2k16 key
+CB7KF-BWN84-R7R2Y-793K2-8XDDG
+
+
+创建Centos6.8 linux vm
+virt-install \
+--virt-type=kvm \
+--name=s1-cent6 \
+--ram=5120  \
+--vcpus=2 \
+--os-variant=CentOS6.8 \
+--hvm \
+--cdrom=/home/vmiso/CentOS-6.8-x86_64-bin-DVD1.iso \
+--network=bridge=br1,model=virtio \
+--graphics vnc,listen=0.0.0.0 \
+--disk path=/home/vmlist/debian_vm_cent6.qcow2,size=100,bus=virtio,format=qcow2
+
+使用VNC链接计算机
+查看VNC端口
+virsh vncdisplay centos7
+通过VNC viewer连接
+如果是Windows系统则直接从REALVNC官方网站 https://www.realvnc.com/download/viewer/下载VNC viewer安装，然后打开VNC viewer输入<宿主主机ip>:进行连接即可。
+如果连接时闪退，可以尝试将VNC的File->Preference->Expert->ColorLevel中的Value值修改为full，保存后再次连接虚拟机即可
+
+
+虚拟机克隆
+virt-clone --original=s3-kvm11 \
+           --name=s3-kvm14 \
+           --file=/home/vmlist/debian_vm_cent14.qcow2
+
+virt-clone --original=s2-cent_10 \
+           --name=s1-cent3 \
+           --file=/home/vmlist/debian_vm_cent19.qcow2		   
+		   
+–original后面需要是被克隆的虚拟机名，–name后面是你克隆后的虚拟机名，–file后面是克隆虚拟机的磁盘映像需要存放的位置，可以使用-o,-n,-f来简写，当原虚拟机有多个硬盘文件时，后面需要跟多个–file。注意virt-clone无法指定静态网络参数
+virt-clone还可以指定uuid，mac等信息，省略的信息表示由virt自动生成。
+virt-clone后面也可以只接–original参数，然后再接个–auto-clone参数，就是由virt-clone自动进行克隆
+
+虚拟机快照管理
+如果虚拟机的硬盘格式是RAW是无法支持创建虚拟机快照的必须转换成qcow2的硬盘格式才可以
+硬盘格式转换方法如下
+qemu-img convert -f raw -O qcow2 [input filename] [output filename] 将raw的虚拟机文件转换成qcow2的虚拟机文件
+virsh edit vmfilename.xml 更改KVM虚拟机的配置文件，文件的目录在cd /etc/libvirt/qemu/
+需要修改的地方是：
+      <driver name='qemu' type='raw' cache='none'/>
+      <source file='/data/centos6.6_1.img'/>
+
+改为：
+      <driver name='qemu' type='qcow2' cache='none'/>
+      <source file='/data/centos6.6_1.qcow2'/>
+保存后再次连接虚拟机即可
+然后再次运行虚拟机，检查修改后的虚拟机的硬盘格式是否能成功启用，成功后使用下面命令创建虚拟机镜像
+virsh snapshot-create-as VMname shotVMname
+
+克隆的虚拟机网卡无法启动的解决办法
+克隆的虚拟机会出现网卡名称与原虚拟机不一样的情况，此时要修改网卡名称
+修改方法：
+vim /etc/udev/rules.d/70-persistent-net.rules 
+修改 NAME=“eth1"
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="52:54:00:0d:01:c3", ATTR{type}=="1", KERNEL=="eth*", NAME="eth0"
+修改network-scripts下的网卡配置文件名称
+mv /etc/sysconfig/network-scripts/ifcfg-eth0 /etc/sysconfig/network-scripts/ifcfg-eth1
+修改ifcfg-eth1配置文件
+vim /etc/sysconfig/network-scripts/ifcfg-eth0
+DEVICE=eth1 #需要修改的地方
+HWADDR=52:54:00:0D:01:C3 #需要修改的地方 mac地址要与70-persistent-net.rules地址一样，要不然无法正确识别网卡
+TYPE=Ethernet
+UUID=cdc5d480-0572-4446-87b5-6b4a98c8b6b5 #此处要注释掉
+ONBOOT=yes
+NM_CONTROLLED=yes
+BOOTPROTO=dhcp
+重启计算机
+reboot
+
+查看虚拟机快照列表
+virsh snapshot-list VMname
+快照文件存放的位置是在
+centos6.6_1子机的快照文件在  /var/lib/libvirt/qemu/snapshot/$VMname/ 目录下
+恢复快照
+virsh snapshot-revert $VMname $snapshot-name
+删除快照
+virsh snapshot-delete $VMname $snapshot-name
+
+
+虚拟机管理常用命令
+强制关闭虚拟机电源：
+virsh destroy VMname
+启动虚拟主机：
+virsh start VMname
+从虚拟机列表中移除虚拟机:
+virsh undefine VMname
+查看所有虚拟机列表：
+virsh list --all
+查看虚拟机信息：
+virsh dominfo VMname
+暂停/挂起虚拟主机：
+virsh suspend VMname
+恢复暂停状态的虚拟机：
+virsh resume VMname
+软重启（安全重启，相当于在虚拟机内部点击重启选项）虚拟机：
+virsh reboot VMname
+硬重启虚拟机（不安全，有可能数据丢失，相当于强制按主机上的重启按钮）：
+virsh reset VMname
+移除虚拟机定义，即从虚拟机列表中移除虚拟机：
+virsh undefine VMname
+该命令只是删除/etc/libvirt/qemu/目录下名为centos7.xml的配置文件，并不会删除虚拟机磁盘文件
+常用路径
+虚拟机系统文件：/home/vmlist(自定义)
+虚拟机快照文件: /var/lib/libvirt/qemu/snapshot
+虚拟机配置文件：/etc/libvirt/qemu/
+
+虚拟机重命名
+进入虚拟机配置文件的文件夹
+cd /etc/libvirt/qemu/
+关闭虚拟机
+virsh destroy $VMname
+从虚拟机目录删除
+virsh undefine $VMname
+更改配置文件名
+mv $old_vm_name.xml new_vm_name.xml
+修改里面的name标签
+<name>$old_vm_name</name>
+<name>$new_vm_name</name>
+重新编译配置文件
+virsh define new_vm_name
+重新打开虚拟机即可
+
+虚拟机开机随宿主机开机自动启动
+virsh autostart $vmname
+取消开机自动启动
+virsh autostart --disable $vmname
+查看已创建的开机自动启动项
+ls /etc/libvirt/qemu/autostart/
+
+
+debian9挂载U盘
+查看u盘的设备分区
+fdisk -l
+显示结果
+Device     Boot Start      End  Sectors  Size Id Type
+/dev/sdb1  *     8064 60555263 60547200 28.9G  c W95 FAT32 (LBA)
+创建usb挂载点
+mkdir /mnt/usb
+挂载U盘 
+mount /dev/sdb1 /mnt/usb
+进入文件查看U盘
+cd /mnt/usb && ls
+
+kvm 挂载U盘
+查看U盘设备:lsusb
+显示结果：
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 001 Device 007: ID 1604:10c0 Tascam 
+Bus 001 Device 006: ID 1604:10c0 Tascam 
+Bus 001 Device 005: ID 1604:10c0 Tascam 
+Bus 001 Device 004: ID 1c4f:0002 SiGma Micro Keyboard TRACER Gamma Ivory
+Bus 001 Device 003: ID 1c4f:0034 SiGma Micro 
+Bus 001 Device 009: ID 0951:1666 Kingston Technology DataTraveler G4
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+写添加设备的配置：
+virsh edit $VMname
+添加下面这段 
+ <hostdev mode='subsystem' type='usb' managed='yes'>
+   <source>
+   <vendor id='0x0951'/>
+   <product id='0x1666'/>
+   </source>
+ </hostdev>
+保存退出
+virsh destroy $VMname
+重新加载虚拟机配置文件
+virsh define /etc/libvirt/qemu/$VMname.xml
+启动虚拟机
+virsh start $VMname
+就完成了U盘的挂载了
+
+监控
+监控内存，CPU，进程
+使用hTOP 
+安装hTOP apt-get install ctop -y
+运行 ctop
+监控网络流量
+iftop
+安装 apt-get install iftop -y
+运行 iftop -n
+
+==========================================================================================================
+debian9安装mysql
+==========================================================================================================
+
+安装mysql 
+apt-get install mysql-server
+安装 MariaDB 仍旧可以使用下面的命令，相比使用 mariadb-server，使用 mysql-server 能够保证对 MySQL 的兼容性。
+
+修改服务监听地址
+不再是修改 my.cnf 了。这次，你需要修改的是这个文件：	
+vim /etc/mysql/mariadb.conf.d/50-server.cnf
+修改 bind-address 的值
+
+[mysqld]
+#
+# * Basic Settings
+#
+user            = mysql
+pid-file        = /var/run/mysqld/mysqld.pid
+socket          = /var/run/mysqld/mysqld.sock
+port            = 3306
+basedir         = /usr
+datadir         = /var/lib/mysql
+tmpdir          = /tmp
+lc-messages-dir = /usr/share/mysql
+skip-external-locking
+ 
+# Instead of skip-networking the default is now to listen only on
+# localhost which is more compatible and is not less secure.
+bind-address            = 0.0.0.0
+进入mysql给 MariaDB 的 root 用户授予远程访问权限
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'192.168.100.%' IDENTIFIED BY 'my-new-password' WITH GRANT OPTION;
+use mysql
+UPDATE user SET Password = password('新密码') WHERE User = 'root';
+flush privileges;
+退出，重启数据库服务
+systemctl restart mariadb.service
+
+
+==========================================================================================================
+linux 访问windows共享文件夹
+==========================================================================================================
+sudo mount -t cifs -o username=HJC,password=123 //192.168.15.10/pass_dict /home/windows_share
+其中几个参数表示含义：
+cifs：Common Internet File System，可以理解为网络文件系统。
+usrname：访问共享文件夹的用户名
+password：访问密码
+//192.168.66.198/share：表示网络文件夹的地址，注意这里最后不能加/，
+如果是//192.168.66.198/share/则会报如下错误：mount: //192.168.66.198/share/ is not a valid block device
+
+nmap 扫描局域网
+https://www.jianshu.com/p/4f5f8e09dfe0
+
+教程出处:
+http://notes.maxwi.com/2016/11/29/kvm-create-and-manage/
+
+==========================================================================================================
+linux shell 多窗口工具的安装以及使用
+==========================================================================================================
+安装 tumx
+sudo apt-get install tmux -y
+
+==========================================================================================================
+debian 安装,配置，使用git
+==========================================================================================================
+安装git:
+apt-get install git -y
+设置git:
+git config --global user.name "Your Name"
+git config --global user.email "email@example.com"
+创建版本库:
+$ mkdir learngit
+$ cd learngit
+$ pwd
+通过git init命令把这个目录变成Git可以管理的仓库：
+$ git init
+本地git仓库提交代码：
+git add $filename
+提交说明
+git commit -m "说明更改过了什么"
+生产本机秘钥
+ssh-keygen -t rsa
+生产的秘钥文件为id_rsa.pub，用everthing搜索一下就好了
+GitHub 上添加 SSH key
+打开github，github上settings里面的SSH and GPG keys
+然后New SSH
+Title位置不需要填
+粘贴
+Add SSH key
+测试连接 ssh -T git@github.com
+在第一次测试时会弹出警告，需要填写yes，然后回车
+
+从本地git仓库上传到github仓库
+git remote add origin git@github.com:yellowaug/word-dict.git
+git push -u origin master
+
+git创建新分支，并将分支上传到Github
+clone github上的项目
+查看本地所有分支
+git branch -a
+查看远程分支
+git branch -r
+本地创建新的分支
+git branch [branch name]
+切换到新的分支
+git checkout [branch name]
+将新分支推送到github
+git push origin [branch name]
+删除本地分支
+git branch -d [branch name]
+删除远程分支
+git push origin :[branch name]

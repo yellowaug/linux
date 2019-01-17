@@ -1,0 +1,112 @@
+Zabbix安装
+教程地址：https://www.howtoing.com/install-zabbix-monitoring-server-and-agent-on-debian-9
+zabbix 配置教程地址：
+http://www.zsythink.net/archives/category/%E8%BF%90%E7%BB%B4%E7%9B%B8%E5%85%B3/zabbix/
+测试zabbix 服务端与客户端的通信
+zabbix-get -s $ip -k $key_value[paramets]
+
+debian9下 zabbix中文字体乱码解决方案
+在本地电脑 c:\windows\fonts中找到宋体字
+上传到 /usr/share/zabbix/fonts
+修改配置文件
+vim /ust/share/zabbix/include/defines.inc.php
+修改以下几个选项
+define('ZBX_GRAPH_FONT_NAME' 'simkai');
+defien('ZBX_FONT_NAME','simkai');
+
+安装Apache，PHP和MariaDB
+Zabbix运行在Apache Web服务器上，用PHP编写，使用MariaDB / MySQL来存储数据。 
+所以为了安装Zabbix，你需要Apache，MariaDB和PHP工作。 首先，运行以下命令安装Apache，PHP和其他PHP模块：
+sudo apt-get install apache2 libapache2-mod-php7.0 php7.0 php7.0-xml php7.0-bcmath php7.0-mbstring -y
+
+接下来，您将需要将MariaDB存储库添加到您的系统。 因为，最新版本的MariaDB在Debian 9默认存储库中不可用。
+您可以通过运行以下命令来添加存储库：
+sudo apt-get install software-properties-common -y
+sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xF1656F24C74CD1D8
+sudo add-apt-repository 'deb [arch=amd64] http://www.ftp.saix.net/DB/mariadb/repo/10.1/debian stretch main'
+
+接下来，通过运行以下命令来更新存储库：
+sudo apt-get update -y
+
+最后，使用以下命令安装MariaDB服务器：
+sudo apt-get install mariadb-server -y
+
+默认情况下，MariaDB安装不受保护。 所以你需要先保证它。 您可以通过运行mysql_secure_installation脚本执行此操作。
+sudo mysql_secure_installation
+
+回答所有问题，如下所示：   
+Enter current password for root (enter for none): Enter
+Set root password? [Y/n]: Y
+New password: 
+Re-enter new password: 
+Remove anonymous users? [Y/n]: Y
+Disallow root login remotely? [Y/n]: Y
+Remove test database and access to it? [Y/n]: Y
+Reload privilege tables now? [Y/n]: Y
+上面的脚本将设置root密码，删除测试数据库，删除匿名用户，并禁止从远程位置进行root登录。
+
+一旦MariaDB安装受到保护，请启动Apache和MariaDB服务，并通过运行以下命令使其在启动时启动：
+sudo systemctl start apache2
+sudo systemctl enable apache2
+sudo systemctl start mysql
+sudo systemctl enable mysql
+
+安装Zabbix软件包
+默认情况下，Zabbix在Debian 9仓库中可用，但可能已经过期。 所以建议安装官方Zabbix存储库的最新版本。 
+您可以使用以下命令下载并添加最新版本的Zabbix存储库：
+wget http://repo.zabbix.com/zabbix/3.0/debian/pool/main/z/zabbix-release/zabbix-release_3.0-2+stretch_all.deb
+
+接下来，使用以下命令安装下载的存储库：
+sudo dpkg -i zabbix-release_3.0-2+stretch_all.deb
+
+接下来，通过运行以下命令来更新程序包缓存并通过Web前端和Mysql支持安装Zabbix服务器：
+sudo apt-get update -y
+sudo apt-get install zabbix-server-mysql zabbix-frontend-php -y
+
+您还需要安装Zabbix代理来收集有关Zabbix服务器状态本身的数据：
+sudo apt-get install zabbix-agent -y(debian)
+centos6安装方法
+rpm -ivh  http://repo.zabbix.com/zabbix/2.4/rhel/6/x86_64/zabbix-release-2.4-1.el6.noarch.rpm
+sudo yum install zabbix-agent -y
+在安装Zabbix代理之后，启动Zabbix代理服务，并通过运行以下命令使其在启动时启动：
+sudo systemctl start zabbix-agent
+sudo systemctl enable zabbix-agent
+
+mysql 数据库配置：
+登录mysql
+mysql -u root -p
+创建数据库
+CREATE DATABASE zabbixdb character set utf8 collate utf8_bin;
+创建用户，以及更改用户权限
+CREATE user zabbix identified by 'hjc'
+GRANT ALL PRIVILEGES on zabbixdb.* to zabbix@'%' identified by 'hjc';
+GRANT ALL PRIVILEGES on zabbixdb.* to zabbix@localhost identified by 'hjc';
+将zabbix的数据库导入mysql中
+cd /usr/share/doc/zabbix-server-mysql*/
+zcat create.sql.gz | mysql -u root -p zabbixdb
+配置zabbix
+sudo nano /etc/zabbix/apache.conf
+如下所示更改文件： 
+        php_value max_execution_time 300
+        php_value memory_limit 128M
+        php_value post_max_size 32M
+        php_value upload_max_filesize 8M
+        php_value max_input_time 300
+        php_value always_populate_raw_post_data -1
+        php_value date.timezone Asia/Kolkata
+完成后保存文件。
+
+接下来，您将需要更新Zabbix的数据库详细信息。 你可以通过编辑`/ etc / zabbix / zabbix_server.conf`文件来做到这一点：
+sudo nano /etc/zabbix/zabbix_server.conf
+
+更改以下行：
+DBHost=localhost
+DBName=zabbixdb
+DBUser=zabbixuser
+DBPassword=password
+
+完成后保存并关闭文件。 然后使用以下命令重新启动所有服务：
+sudo systemctl restart apache2
+sudo systemctl restart mysql
+sudo systemctl restart zabbix-server
+到此linux端的配置已经完成，下一步到web端的配置了

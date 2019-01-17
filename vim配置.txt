@@ -1,0 +1,149 @@
+教程地址
+https://juejin.im/post/5a38c37f6fb9a0450909a151
+安装Vnudle 
+确定本机已经安装了git
+如果没有安装则执行：
+apt-get install git -y
+下载Vundle
+git clone https://github.com/gmarik/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+然后在我们的.vimrc 中添加设置，一般.vimrc在我们的用户主目录下， cd ~进入当前用户主目录，.vimrc是vim的设置文件，我们后面会添加很多设置在里面，如果没改过设置，可能一开始不存在，总之我们使用vim .vimrc创建或者打开该文件，并添加以下：
+chak
+然后配置vimrc配置文件(在用户目录进行配置vimrc 即可）
+nano ~/.vim/vimrc,在代码最后端加上以下代码
+
+set nocompatible              
+filetype off                  
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+Plugin 'gmarik/Vundle.vim'
+call vundle#end()            
+filetype plugin indent on    
+进入vim 运行
+：PluinInstall
+安装NERDTree(目录树）
+在vimrc配置文件中添加一行
+Plugin 'scrooloose/nerdtree'
+进入vim 运行
+：PluginInstall
+再对配置文件作如下添加
+" NERDTree config
+" open a NERDTree automatically when vim starts up
+autocmd vimenter * NERDTree
+"open a NERDTree automatically when vim starts up if no files were specified
+autocmd StdinReadPre * let s:std_in=1
+autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
+"open NERDTree automatically when vim starts up on opening a directory
+autocmd StdinReadPre * let s:std_in=1
+autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists("s:std_in") | exe 'NERDTree' argv()[0] | wincmd p | ene | endif
+"map F2 to open NERDTree
+map <F2> :NERDTreeToggle<CR>
+"close vim if the only window left open is a NERDTree
+autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+
+安装 vim YouCompleteMe插件
+查看vim 是的支持 python 2或者python3
+vim --version
+如果不支持，卸载vim
+sudo apt remove vim-tiny vim-common vim-gui-common vim-nox
+下载重编译VIM需要的依赖包
+sudo apt install -y libncurses5-dev libgnome2-dev libgnomeui-dev \
+libgtk2.0-dev libatk1.0-dev libbonoboui2-dev \
+libcairo2-dev libx11-dev libxpm-dev libxt-dev python-dev \
+python3-dev ruby-dev lua5.1 liblua5.1-dev libperl-dev git
+下载VIM
+git clone https://github.com/vim/vim.git
+进入vim 目录
+cd /home/hjc/vim
+运行如下命令(要一行一行的复制，不能一下子全部复制完，要不然会报错的）
+./configure --with-features=huge \
+--enable-multibyte \
+--enable-rubyinterp=yes \
+--enable-pythoninterp=yes \
+--with-python-config-dir=/usr/lib/python2.7/config \ 
+--enable-python3interp=yes \
+--with-python3-config-dir=/usr/lib/python3.5/config \
+--enable-perlinterp=yes \
+--enable-luainterp=yes \
+--enable-gui=gtk2 \
+--enable-cscope \
+--prefix=/usr/local
+
+make VIMRUNTIMEDIR=/usr/local/share/vim/vim81
+编译vim
+sudo make install
+教程地址
+https://www.jianshu.com/p/aac78ff576c5
+https://github.com/Valloric/YouCompleteMe/wiki/Building-Vim-from-source
+
+卸载vim 
+进入cd /home/hjc/vim
+sudo make uninstall
+sudo apt-get remove vimsudo apt-get remove vim-runtime
+sudo apt-get remove vim -tiny
+sudo apt-get remove vim-common
+sudo apt-get remove vim-doc
+sudo apt-get remove vim-scripts
+编译完成后继续安装YoucompleteME
+
+查看vim配置文件路径
+进入vim 
+: echo $HOME
+: echo $VIM
+则显示出vim 配置文件的路径了
+配置vimrc文档
+Plugin 'Valloric/YouCompleteMe'
+进入vim 安装
+：PluginInstall
+则会报错
+The ycmd server SHUT DOWN (restart with ':YcmRestartServer'). YCM core library not detected; you need to compile YCM before using it. Follow the instructions in the documentation
+进入插件管理目录
+cd ~/.vim/bundle/YouCompleteMe
+运行以下命令
+apt-get install -y cmake
+python install.py
+到此则安装完成
+
+公司vim整体配置
+set nu!
+set nocompatible
+set guifont=Luxi/Mono/9
+set history=1000
+set background=dark
+filetype on
+syntax on
+set autoindent
+set cindent
+set smartindent
+set tabstop=4
+set shiftwidth=4
+set ai!
+set showmatch
+set guioptions-=T
+set vb t_vb=
+set ruler
+set nohls
+set incsearch
+set backspace=2
+filetype off
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+Plugin 'gmarik/Vundle.vim'
+Plugin 'scrooloose/nerdtree'
+call vundle#end()
+" NERDTree config
+" open a NERDTree automatically when vim starts up
+autocmd vimenter * NERDTree
+"open a NERDTree automatically when vim starts up if no files were specified
+autocmd StdinReadPre * let s:std_in=1
+autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
+"open NERDTree automatically when vim starts up on opening a directory
+autocmd StdinReadPre * let s:std_in=1
+autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists("s:std_in") | exe 'NERDTree' argv()[0] | wincmd p | ene | endif
+"map F2 to open NERDTree
+map <F2> :NERDTreeToggle<CR>
+"close vim if the only window left open is a NERDTree        
+
+vim 配置文档位置
+cd /root/.vim
+
+

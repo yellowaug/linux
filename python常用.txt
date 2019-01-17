@@ -1,0 +1,42 @@
+python转exe
+https://www.cnblogs.com/pcat/p/8463939.html
+
+pyQt5
+http://code.py40.com/1961.html
+http://code.py40.com/pyqt5/30.html
+https://github.com/maicss/PyQt5-Chinese-tutoral
+
+python获取电脑硬件基本信息
+https://blog.csdn.net/fengmm521/article/details/79468677
+
+重置OA绑定码API（无需token）
+http://192.168.13.200:8080/oahj/attm/key/init/single_key?userName=
+
+python获取KVM信息
+apt-get install python3-libvirt 安装python kvm api
+http://blog.51cto.com/10616534/1878609
+
+python 安装wmi库
+先装win32 python api
+python -m pip install pypiwin32
+再安装python wmi
+pip install WMI
+
+Selenium自动化测试
+使用cookie跳过验证码登录:(代码实例）
+from selenium import webdriver
+from time import *
+driver = webdriver.Chrome()
+driver.get("https://xxxxxxxxxx")
+sleep(6)
+# 添加Cookie
+driver.add_cookie({'name':'xxxx','value':'xxxxxxxxxxx'})
+
+# 刷新页面
+driver.refresh()
+
+#关闭浏览器
+driver.quit()
+
+python windows下添加网络文件夹
+https://www.cnblogs.com/viator42/p/3522519.html

@@ -1,0 +1,50 @@
+释放linux的swap内存
+https://blog.csdn.net/chenghuikai/article/details/77476830
+设置内存警戒线，一般是超过90%使用内存swap交换空间
+vim /etc/sysctl.conf ：
+    vm.swappiness参数，设置成vm.swappiness＝10：就是说当内存使用90%以上才会使用swap空间
+第一步：先执行sync命令
+    #sync
+    sync命令用于强制被改变的内容立刻写入磁盘，更新超块信息，以防止释放，sync命令则可用来强制将内存缓冲区中的数据立即写入磁盘中。 
+第二步：(如果仅仅是清理swap的话，这一步可以不执行)
+    echo 3 > /proc/sys/vm/drop_caches
+    关于drop_caches： 
+    drop_caches的详细文档如下：
+    * echo 1 > /proc/sys/vm/drop_caches 
+    To free dentries and inodes: 
+    * echo 2 > /proc/sys/vm/drop_caches 
+    To free pagecache, dentries and inodes: 
+    echo 3 > /proc/sys/vm/drop_caches 
+    As this is a non-destructive operation, and dirty objects are notfreeable, the user should run “sync” first in order to make sure allcached objects are freed. 
+    This tunable was added in 2.6.16. 
+    echo 1:释放页面缓存 
+    echo 2:释放目录文件和inodes 
+    echo 3:释放所有缓存(页面缓存，目录文件和inodes)
+第三步：关闭swap,再开户swap
+    swapoff -a
+    swapon -a
+
+linux 挂载新硬盘
+如果硬盘大于2TB要使用GPT的硬盘格式
+https://blog.csdn.net/q626992497q/article/details/46521929
+https://www.jianshu.com/p/d0c75fd8bcc5
+第一步：
+    parted /dev/sdb
+2. 将MBR磁盘格式化为GPT
+    (parted) mklabel gpt 
+3.退出
+    quit
+然后再使用fdisk命令
+1.进入硬盘：
+    fdisk /dev/sdb
+2.创建分区
+    (commom) e(逻辑分区)
+    (commom) 1(分区个数)
+    (commom) 使用默认值
+    (commom) wq
+3.格式化
+mkfs.ext4 /dev/sdb1
+4.挂载分区
+mkdir /home/disk1
+mount /dev/sdb1 /home/disk1
+
