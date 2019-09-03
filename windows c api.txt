@@ -8,3 +8,9 @@ wbemtest
 
 wmi windows api
 https://docs.microsoft.com/zh-cn/previous-versions/windows/desktop/secrcw32prov/win32-securitysettingoflogicalshare
+
+windows c# 关于打印机的API 以及实例
+https://docs.microsoft.com/zh-cn/dotnet/api/system.printing.printqueue?view=netframework-4.6.1
+https://www.cnblogs.com/Yesi/p/6000247.html
+https://docs.microsoft.com/en-us/dotnet/framework/wpf/advanced/how-to-invoke-a-print-dialog
+

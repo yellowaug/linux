@@ -1,3 +1,44 @@
+shadowscoks教程 https://ssr.tools/252
+连接虚拟机的SHELL 
+wget --no-check-certificate -O shadowsocks-all.sh https://raw.githubusercontent.com/teddysun/shadowsocks_install/master/shadowsocks-all.sh
+chmod +x shadowsocks-all.sh
+./shadowsocks-all.sh 2>&1 | tee shadowsocks-all.log
+
+多用户配置
+配置前记得备份原配置文件，这是一个好习惯
+编辑配置文件 vim /etc/shadowsocks.json
+修改如下内容
+{
+ 	"server":"my_server_ip",  #填入你的IP地址
+	"local_address": "127.0.0.1",
+	"local_port":1080,
+	"port_password": {
+  	    "8381": "foobar1",    #端口号，密码
+  	    "8382": "foobar2",
+   		"8383": "foobar3",
+    	"8384": "foobar4"
+	},
+ 	"timeout":300,
+	"method":"aes-256-cfb",
+ 	"fast_open": false
+}
+
+然后按提示操作即可完成安装
+shadowsocks日志路径： /var/log/shadowsocks.log
+shadowsocks常用命令：
+启动SSR：
+/etc/init.d/shadowsocks-r start
+退出SSR：
+/etc/init.d/shadowsocks-r stop
+重启SSR：
+/etc/init.d/shadowsocks-r restart
+SSR状态：
+/etc/init.d/shadowsocks-r status
+卸载SSR：
+./shadowsocks-all.sh uninstall
+
+
+
 释放linux的swap内存
 https://blog.csdn.net/chenghuikai/article/details/77476830
 设置内存警戒线，一般是超过90%使用内存swap交换空间
@@ -48,3 +89,150 @@ mkfs.ext4 /dev/sdb1
 mkdir /home/disk1
 mount /dev/sdb1 /home/disk1
 
+cent7安装NFS server 以及配置方法  网站链接：https://www.cnblogs.com/pipci/p/9935572.html
+使用 yum 安装 NFS 安装包。
+$ sudo yum install nfs-utils
+注意
+只安装 nfs-utils 即可，rpcbind 属于它的依赖，也会安装上。
+步骤 2: 服务端配置
+设置 NFS 服务开机启动
+
+$ sudo systemctl enable rpcbind
+$ sudo systemctl enable nfs
+启动 NFS 服务
+
+$ sudo systemctl start rpcbind
+$ sudo systemctl start nfs
+防火墙需要打开 rpc-bind 和 nfs 的服务
+
+$ sudo firewall-cmd --zone=public --permanent --add-service=rpc-bind
+success
+$ sudo firewall-cmd --zone=public --permanent --add-service=mountd
+success
+$ sudo firewall-cmd --zone=public --permanent --add-service=nfs
+success
+$ sudo firewall-cmd --reload
+success
+步骤 3: 配置共享目录
+服务启动之后，我们在服务端配置一个共享目录
+
+$ sudo mkdir /data
+$ sudo chmod 755 /data
+根据这个目录，相应配置导出目录
+
+$ sudo vi /etc/exports
+添加如下配置
+/data/     192.168.0.0/24(rw,sync,no_root_squash,no_all_squash)
+/data: 共享目录位置。
+192.168.0.0/24: 客户端 IP 范围，* 代表所有，即没有限制。
+rw: 权限设置，可读可写。
+sync: 同步共享目录。
+no_root_squash: 可以使用 root 授权。
+no_all_squash: 可以使用普通用户授权。
+:wq 保存设置之后，重启 NFS 服务。
+
+$ sudo systemctl restart nfs
+可以检查一下本地的共享目录
+
+$ showmount -e localhost
+Export list for localhost:
+/data 192.168.0.0/24
+这样，服务端就配置好了，接下来配置客户端，连接服务端，使用共享目录。
+
+cent7 更换下载源
+wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+yum makecache
+
+cent7安装.net core 2.0
+添加dotnet产品Feed
+sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
+sudo sh -c 'echo -e "[packages-microsoft-com-prod]\nname=packages-microsoft-com-prod \nbaseurl=https://packages.microsoft.com/yumrepos/microsoft-rhel7.3-prod\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/dotnetdev.repo'
+
+安装 .NET Core SDK
+yum update -y &&
+yum install libunwind libicu -y &&
+yum install dotnet-sdk-2.0.0 -y
+
+编写代码验证安装
+dotnet new console -o hwapp
+cd hwapp
+
+运行程序
+dotnet run
+
+cent7 安装django + apache2
+https://www.jianshu.com/p/e3afd572f1be
+
+cent7 yum 管理安装软件
+yum history list 软件名
+yum undo ID 卸载软件
+
+
+CentOS7安装keepalived教程
+安装前确保系统安装了GCC 以及SSLDEV的库，要不然编译会报错
+教程网站
+安装：https://blog.csdn.net/xyang81/article/details/52554398
+配置：https://blog.51cto.com/lanlian/1303195
+ng+keepalived 配置https://blog.csdn.net/l1028386804/article/details/72801492
+
+shell> cd /usr/local/src
+shell> wget http://www.keepalived.org/software/keepalived-1.2.24.tar.gz #注意版本，最好用新版本的
+shell> tar -zxvf keepalived-1.2.24.tar.gz
+shell> cd keepalived-1.2.24
+shell> ./configure --prefix=/usr/local/keepalived
+shell> make && make install
+分别对应系统目录（忽略samples目录）：
+
+/etc/keepalived/keepalived.conf
+/etc/rc.d/init.d/keepalived
+/etc/sysconfig/keepalived
+
+将配置文件拷贝到系统对应的目录下：（这个是旧版的，新版的文件略有不同，大概看一下就知道怎么回事了）
+shell> mkdir /etc/keepalived
+shell> cp /usr/local/keepalived/etc/keepalived.conf /etc/keepalived/keepalived.conf
+shell> cp /usr/local/keepalived/etc/rc.d/init.d/keepalived /etc/rc.d/init.d/keepalived
+shell> cp /usr/local/keepalived/etc/sysconfig/keepalived /etc/sysconfig/keepalived
+
+设置keepalived服务开机启动：
+shell> chkconfig keepalived on
+shell> service keepalived start   #启动服务
+shell> service keepalived stop    #停止服务
+shell> service keepalived restart #重启服务
+--------------------- 
+
+CentOS7.4根目录root扩容操作
+1、首先确认当前各文件系统大小，可以看到根目录对应文件系统大小是XXGB，/boot对应文件系统大小是XXGB。
+[root@mysql1 software]# df -h
+[root@mysql1 software]# vgdisplay
+[root@mysql1 software]# vgdisplay -v centos
+
+2、确认当前磁盘容量信息，/dev/sda大小为XXXGB，划分了2个分区，已划分的总容量不到XXGB。还有将近XXGB可用空间。
+[root@mysql1 software]# fdisk -l
+
+3、在未用空间创建新的分区sda3。
+[root@mysql1 software]# fdisk /dev/sda
+
+4、根据上面步骤的提示，需要重启或者运行命令partprobe重新同步磁盘分区信息，分区重新识别后可以看到新分区sda3。 
+[root@mysql1 software]#
+[root@mysql1 software]# partprobe
+[root@mysql1 software]# fdisk -l
+
+5、使用lvm命令pvcreate格式化sda3分区。
+[root@mysql1 software]# pvcreate /dev/sda3
+[root@mysql1 software]# pvdisplay
+
+6、将分区sda3加入root所在的vg（centos）里
+[root@mysql1 software]# vgextend centos /dev/sda3
+[root@mysql1 software]# vgdisplay -v centos
+
+7、扩展root根分区所在的逻辑卷大小，vgdisplay可以看到root所在lv大小已经发生变化。
+[root@mysql1 software]# lvextend -L +4G /dev/centos/root
+[root@mysql1 software]# vgdisplay
+
+8、根目录大小依然没变化，确认root文件系统的类型是xfs后，使用xfs_growfs命令扩展根目录大小。
+[root@mysql1 software]# df -h
+[root@mysql1 software]# mount
+[root@mysql1 software]# xfs_growfs /dev/centos/root
+[root@mysql1 software]# df -h
+
+9.结束

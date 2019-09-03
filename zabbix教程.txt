@@ -3,13 +3,14 @@ Zabbix安装
 zabbix 配置教程地址：
 http://www.zsythink.net/archives/category/%E8%BF%90%E7%BB%B4%E7%9B%B8%E5%85%B3/zabbix/
 测试zabbix 服务端与客户端的通信
+apt-get install zabbix-get -y
 zabbix-get -s $ip -k $key_value[paramets]
 
 debian9下 zabbix中文字体乱码解决方案
 在本地电脑 c:\windows\fonts中找到宋体字
 上传到 /usr/share/zabbix/fonts
 修改配置文件
-vim /ust/share/zabbix/include/defines.inc.php
+vim /usr/share/zabbix/include/defines.inc.php
 修改以下几个选项
 define('ZBX_GRAPH_FONT_NAME' 'simkai');
 defien('ZBX_FONT_NAME','simkai');
@@ -29,7 +30,7 @@ sudo add-apt-repository 'deb [arch=amd64] http://www.ftp.saix.net/DB/mariadb/rep
 sudo apt-get update -y
 
 最后，使用以下命令安装MariaDB服务器：
-sudo apt-get install mariadb-server -y
+sudo apt-get install mariadb-server -y --allow-unauthenticated
 
 默认情况下，MariaDB安装不受保护。 所以你需要先保证它。 您可以通过运行mysql_secure_installation脚本执行此操作。
 sudo mysql_secure_installation
@@ -78,9 +79,9 @@ mysql -u root -p
 创建数据库
 CREATE DATABASE zabbixdb character set utf8 collate utf8_bin;
 创建用户，以及更改用户权限
-CREATE user zabbix identified by 'hjc'
-GRANT ALL PRIVILEGES on zabbixdb.* to zabbix@'%' identified by 'hjc';
-GRANT ALL PRIVILEGES on zabbixdb.* to zabbix@localhost identified by 'hjc';
+CREATE user zabbix identified by 'zzq';
+GRANT ALL PRIVILEGES on zabbixdb.* to zabbix@'%' identified by 'zzq';
+GRANT ALL PRIVILEGES on zabbixdb.* to zabbix@localhost identified by 'zzq';
 将zabbix的数据库导入mysql中
 cd /usr/share/doc/zabbix-server-mysql*/
 zcat create.sql.gz | mysql -u root -p zabbixdb
@@ -96,6 +97,11 @@ sudo nano /etc/zabbix/apache.conf
         php_value date.timezone Asia/Kolkata
 完成后保存文件。
 
+Time zone for PHP is not set (configuration parameter "date.timezone").
+提示php时区没有设置：
+vim /etc/php/7.0/apache2/php.ini
+systemctl restart apache2
+
 接下来，您将需要更新Zabbix的数据库详细信息。 你可以通过编辑`/ etc / zabbix / zabbix_server.conf`文件来做到这一点：
 sudo nano /etc/zabbix/zabbix_server.conf
 
@@ -110,3 +116,12 @@ sudo systemctl restart apache2
 sudo systemctl restart mysql
 sudo systemctl restart zabbix-server
 到此linux端的配置已经完成，下一步到web端的配置了
+
+CentOS7安装zabbix 
+ https://blog.51cto.com/5001660/2135944
+
+zabbix windows客服端安装
+桌面 ----  开始 ---- 运行  -----  输入cmd 打开DOS命令窗口---- 输入以下两条命令进行zabbix客户端安装。(必须要以管理员身份运行打开DOS命令窗口)
+C:\zabbix\zabbix_agentd.exe -i -c local_conf_file_path   #安装zabbix客户端
+C:\ zabbix\ zabbix_agentd.exe -s -c local_conf_file_path  #启动zabbix服务
+C:\ zabbix\ zabbix_agentd.exe -d -c local_conf_file_path  #删除zabbix服务

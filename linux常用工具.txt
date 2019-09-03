@@ -1,10 +1,38 @@
+全系列常用
+==========================================================================================================
+查看内存占用前10名的程序
+ps aux | sort -k4,4nr | head -n 10
+
+==========================================================================================================
+CentOS7系列
+==========================================================================================================
+更新yum
+先备份原文件：mv /etc/yum.repos.d/CentOS6-Base.repo CentOS6-Base.repo.bak
+下载yum源：wget http://mirrors.163.com/.help/CentOS6-Base-163.repo
+替换yum源：mv  CentOS6-Base-163.repo  CentOS6-Base.repo
+执行完yum makecache命令，即可正常使用了。
+
+查看已安装的程序
+yum list installed
+
+==========================================================================================================
+Cent7 部署ceph分布式硬盘集群 https://blog.csdn.net/aixiaoyang168/article/details/78788703
+==========================================================================================================
+sudo yum install -y yum-utils && 
+sudo yum-config-manager --add-repo https://dl.fedoraproject.org/pub/epel/7/x86_64/ && 
+sudo yum install --nogpgcheck -y epel-release && 
+sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7 && 
+sudo rm /etc/yum.repos.d/dl.fedoraproject.org*
+
+
+==========================================================================================================
 网络IP设置
 ==========================================================================================================
 CentOS6.8设置
 linux 与 linux互传文件
 yum install openssh-clients -y
 格式 scp -r $源文件主机用户名@$源文件主机:$源文件路径 $下载路径
-例子 scp -r root@192.168.16.254:/home/vmiso/virtio-win-0.1.160.iso /home/disk1/vmiso/ 
+例子 scp -r root@10.11.10.16:/home/vmiso/debian-9.8.0-amd64-DVD-1.iso /home/vmiso/ 
 	 scp -r root@192.168.15.251:/home/redisrun.sh /home/
 	 scp -r root@192.168.16.250:/root/.vim /root
 
@@ -480,10 +508,10 @@ vim /etc/network/interfaces
 auto lo
 iface lo inet loopback
 auto  enp0s31f6#网卡
-iface enp0s31f6 inet static
-address 192.168.13.167 
+iface ens3 inet static
+address 10.11.10.21 
 netmask 255.255.255.0
-gateway  192.168.13.1
+gateway 10.11.10.254
 auto  eno1#双网卡设置 不用设置网关
 iface eno1 inet static
 address 192.168.1.112 
@@ -539,7 +567,7 @@ gateway 192.168.16.1
 #iface eno2 inet dhcp
 auto br0
 iface br0 inet dhcp
-bridge_ports enp0s31f6
+bridge_ports enp21s0
 bridge_stp off
 bridge_waitport 0
 bridge_fd 0
@@ -564,7 +592,7 @@ virt-install \
 --disk path=/home/disk1/vmlist/debian_vm_win1.qcow2,size=400,bus=ide,format=qcow2
 安装 virtio windows 驱动
 手动申请一块硬盘给该虚拟机挂上，并把下载的iso也挂载在该虚拟机上
-qemu-img create -f qcow2 debian_vm_win2016_disk3.qcow2 1024G
+qemu-img create -f qcow2 s1-win_1win2016_disk1.qcow2 1024G
 修改$VMname的libvirt的配置文件。
 virsh edit $VMname
 增加如下内容：
@@ -575,7 +603,8 @@ virsh edit $VMname
 </disk>
 <disk type='file' device='disk'>
   <driver name='qemu' type='qcow2'/>
-  <source file='/home/disk2/vmlist/debian_vm_win2016_disk4.qcow2'/>
+  <source file='/home/vmlist/
+  .qcow2'/>
   <target dev='vdf' bus='virtio'/>
 </disk>
 <disk type='file' device='cdrom'>
@@ -598,20 +627,20 @@ KVM安装windows的第二种方法
 创建windows7 vm
 virt-install \
 --virt-type=kvm \
---name=s1-win_2 \
+--name=s1-win_1 \
 --ram=4096  \
 --vcpus=4 \
 --os-variant=windows \
 --hvm \
---cdrom=/home/disk1/vmiso/cn_windows_server_2016_x64_dvd_9718765.iso \
+--cdrom=/home/vmiso/windows_sever_2016.iso \
 --network=bridge=br0,model=virtio \
 --graphics vnc,listen=0.0.0.0 \
---disk path=/home/disk1/vmlist/debian_vm_win2.qcow2,size=1024,bus=virtio,format=qcow2
+--disk path=/home/vmlist/debian_vm_win_1.qcow2,size=200,bus=virtio,format=qcow2
 
 加载virtio驱动镜像：
-virsh attach-disk s1-win_2 /home/disk1/vmiso/virtio-win-0.1.160.iso hda --type cdrom --mode readonly
+virsh attach-disk s1-win_1 /home/vmiso/virtio-win-0.1.160.iso hda --type cdrom --mode readonly
 重新加载win7系统镜像安装系统：
-virsh attach-disk s1-win_2 /home/vmiso/cn_windows_7_ultimate_with_sp1_x64_dvd_u_677408.iso hda --type cdrom --mode readonly
+virsh attach-disk s1-win_1 /home/vmiso/windows_sever_2016.iso hda --type cdrom --mode readonly
 成功附加磁盘
 win2k16 key
 CB7KF-BWN84-R7R2Y-793K2-8XDDG
@@ -620,15 +649,18 @@ CB7KF-BWN84-R7R2Y-793K2-8XDDG
 创建Centos6.8 linux vm
 virt-install \
 --virt-type=kvm \
---name=s1-cent6 \
---ram=5120  \
---vcpus=2 \
---os-variant=CentOS6.8 \
+--name=s2-cent2 \
+--ram=1024  \
+--vcpus=1 \
+--os-variant=rhel7 \
 --hvm \
---cdrom=/home/vmiso/CentOS-6.8-x86_64-bin-DVD1.iso \
---network=bridge=br1,model=virtio \
+--cdrom=/home/vmiso/CentOS-7-x86_64-Minimal-1810.iso \
+--network=bridge=br0,model=virtio \
 --graphics vnc,listen=0.0.0.0 \
---disk path=/home/vmlist/debian_vm_cent6.qcow2,size=100,bus=virtio,format=qcow2
+--disk path=/home/vmlist/cent_vm_2.qcow2,size=200,bus=virtio,format=qcow2
+
+
+os-variant列表 https://hwguo.github.io/blog/2015/09/22/os-variants-list-of-virt-install/
 
 使用VNC链接计算机
 查看VNC端口
@@ -666,7 +698,8 @@ virsh edit vmfilename.xml 更改KVM虚拟机的配置文件，文件的目录在
 保存后再次连接虚拟机即可
 然后再次运行虚拟机，检查修改后的虚拟机的硬盘格式是否能成功启用，成功后使用下面命令创建虚拟机镜像
 virsh snapshot-create-as VMname shotVMname
-
+virsh snapshot-create-as s2-cent1 initstatusvhost && /
+virsh snapshot-create-as s2-cent2 initstatusvhost1
 克隆的虚拟机网卡无法启动的解决办法
 克隆的虚拟机会出现网卡名称与原虚拟机不一样的情况，此时要修改网卡名称
 修改方法：
@@ -856,10 +889,188 @@ https://www.jianshu.com/p/4f5f8e09dfe0
 http://notes.maxwi.com/2016/11/29/kvm-create-and-manage/
 
 ==========================================================================================================
-linux shell 多窗口工具的安装以及使用
+linux shell 多窗口工具的安装以及使用 https://gist.github.com/ryerh/14b7c24dfd623ef8edc7
 ==========================================================================================================
 安装 tumx
 sudo apt-get install tmux -y
+注意：本文内容适用于 Tmux 2.3 及以上的版本，但是绝大部分的特性低版本也都适用，鼠标支持、VI 模式、插件管理在低版本可能会与本文不兼容。
+
+Tmux 快捷键 & 速查表
+启动新会话：
+
+tmux [new -s 会话名 -n 窗口名]
+恢复会话：
+
+tmux at [-t 会话名]
+列出所有会话：
+
+tmux ls
+关闭会话：
+
+tmux kill-session -t 会话名
+关闭所有会话：
+
+tmux ls | grep : | cut -d. -f1 | awk '{print substr($1, 0, length($1)-1)}' | xargs kill
+在 Tmux 中，按下 Tmux 前缀 ctrl+b，然后：
+会话
+:new<回车>  启动新会话
+s           列出所有会话
+$           重命名当前会话
+窗口 (标签页)
+c  创建新窗口
+w  列出所有窗口
+n  后一个窗口
+p  前一个窗口
+f  查找窗口
+,  重命名当前窗口
+&  关闭当前窗口
+调整窗口排序
+swap-window -s 3 -t 1  交换 3 号和 1 号窗口
+swap-window -t 1       交换当前和 1 号窗口
+move-window -t 1       移动当前窗口到 1 号
+窗格（分割窗口）
+%  垂直分割
+"  水平分割
+o  交换窗格
+x  关闭窗格
+⍽  左边这个符号代表空格键 - 切换布局
+q 显示每个窗格是第几个，当数字出现的时候按数字几就选中第几个窗格
+{ 与上一个窗格交换位置
+} 与下一个窗格交换位置
+z 切换窗格最大化/最小化
+同步窗格
+这么做可以切换到想要的窗口，输入 Tmux 前缀和一个冒号呼出命令提示行，然后输入：
+
+:setw synchronize-panes
+你可以指定开或关，否则重复执行命令会在两者间切换。 这个选项值针对某个窗口有效，不会影响别的会话和窗口。 完事儿之后再次执行命令来关闭。帮助
+
+调整窗格尺寸
+如果你不喜欢默认布局，可以重调窗格的尺寸。虽然这很容易实现，但一般不需要这么干。这几个命令用来调整窗格：
+
+PREFIX : resize-pane -D          当前窗格向下扩大 1 格
+PREFIX : resize-pane -U          当前窗格向上扩大 1 格
+PREFIX : resize-pane -L          当前窗格向左扩大 1 格
+PREFIX : resize-pane -R          当前窗格向右扩大 1 格
+PREFIX : resize-pane -D 20       当前窗格向下扩大 20 格
+PREFIX : resize-pane -t 2 -L 20  编号为 2 的窗格向左扩大 20 格
+文本复制模式：
+按下 PREFIX-[ 进入文本复制模式。可以使用方向键在屏幕中移动光标。默认情况下，方向键是启用的。在配置文件中启用 Vim 键盘布局来切换窗口、调整窗格大小。Tmux 也支持 Vi 模式。要是想启用 Vi 模式，只需要把下面这一行添加到 .tmux.conf 中：
+
+setw -g mode-keys vi
+启用这条配置后，就可以使用 h、j、k、l 来移动光标了。
+
+想要退出文本复制模式的话，按下回车键就可以了。然后按下 PREFIX-] 粘贴刚才复制的文本。
+
+一次移动一格效率低下，在 Vi 模式启用的情况下，可以辅助一些别的快捷键高效工作。
+
+例如，可以使用 w 键逐词移动，使用 b 键逐词回退。使用 f 键加上任意字符跳转到当前行第一次出现该字符的位置，使用 F 键达到相反的效果。
+
+vi             emacs        功能
+^              M-m          反缩进
+Escape         C-g          清除选定内容
+Enter          M-w          复制选定内容
+j              Down         光标下移
+h              Left         光标左移
+l              Right        光标右移
+L                           光标移到尾行
+M              M-r          光标移到中间行
+H              M-R          光标移到首行
+k              Up           光标上移
+d              C-u          删除整行
+D              C-k          删除到行末
+$              C-e          移到行尾
+:              g            前往指定行
+C-d            M-Down       向下滚动半屏
+C-u            M-Up         向上滚动半屏
+C-f            Page down    下一页
+w              M-f          下一个词
+p              C-y          粘贴
+C-b            Page up      上一页
+b              M-b          上一个词
+q              Escape       退出
+C-Down or J    C-Down       向下翻
+C-Up or K      C-Up         向下翻
+n              n            继续搜索
+?              C-r          向前搜索
+/              C-s          向后搜索
+0              C-a          移到行首
+Space          C-Space      开始选中
+               C-t          字符调序
+杂项：
+d  退出 tmux（tmux 仍在后台运行）
+t  窗口中央显示一个数字时钟
+?  列出所有快捷键
+:  命令提示符
+配置选项：
+# 鼠标支持 - 设置为 on 来启用鼠标(与 2.1 之前的版本有区别，请自行查阅 man page)
+* set -g mouse on
+
+# 设置默认终端模式为 256color
+set -g default-terminal "screen-256color"
+
+# 启用活动警告
+setw -g monitor-activity on
+set -g visual-activity on
+
+# 居中窗口列表
+set -g status-justify centre
+
+# 最大化/恢复窗格
+unbind Up bind Up new-window -d -n tmp \; swap-pane -s tmp.1 \; select-window -t tmp
+unbind Down
+bind Down last-window \; swap-pane -s tmp.1 \; kill-window -t tmp
+参考配置文件（~/.tmux.conf）：
+下面这份配置是我使用 Tmux 几年来逐渐精简后的配置，请自取。
+
+# -----------------------------------------------------------------------------
+# Tmux 基本配置 - 要求 Tmux >= 2.3
+# 如果不想使用插件，只需要将此节的内容写入 ~/.tmux.conf 即可
+# -----------------------------------------------------------------------------
+
+# C-b 和 VIM 冲突，修改 Prefix 组合键为 Control-Z，按键距离近
+set -g prefix C-z
+
+set -g base-index         1     # 窗口编号从 1 开始计数
+set -g display-panes-time 10000 # PREFIX-Q 显示编号的驻留时长，单位 ms
+set -g mouse              on    # 开启鼠标
+set -g pane-base-index    1     # 窗格编号从 1 开始计数
+set -g renumber-windows   on    # 关掉某个窗口后，编号重排
+
+setw -g allow-rename      off   # 禁止活动进程修改窗口名
+setw -g automatic-rename  off   # 禁止自动命名新窗口
+setw -g mode-keys         vi    # 进入复制模式的时候使用 vi 键位（默认是 EMACS）
+
+# -----------------------------------------------------------------------------
+# 使用插件 - via tpm
+#   1. 执行 git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+#   2. 执行 bash ~/.tmux/plugins/tpm/bin/install_plugins
+# -----------------------------------------------------------------------------
+
+setenv -g TMUX_PLUGIN_MANAGER_PATH '~/.tmux/plugins'
+
+# 推荐的插件（请去每个插件的仓库下读一读使用教程）
+set -g @plugin 'seebi/tmux-colors-solarized'
+set -g @plugin 'tmux-plugins/tmux-pain-control'
+set -g @plugin 'tmux-plugins/tmux-prefix-highlight'
+set -g @plugin 'tmux-plugins/tmux-resurrect'
+set -g @plugin 'tmux-plugins/tmux-sensible'
+set -g @plugin 'tmux-plugins/tmux-yank'
+set -g @plugin 'tmux-plugins/tpm'
+
+# tmux-resurrect
+set -g @resurrect-dir '~/.tmux/resurrect'
+
+# tmux-prefix-highlight
+set -g status-right '#{prefix_highlight} #H | %a %Y-%m-%d %H:%M'
+set -g @prefix_highlight_show_copy_mode 'on'
+set -g @prefix_highlight_copy_mode_attr 'fg=white,bg=blue'
+
+# 初始化 TPM 插件管理器 (放在配置文件的最后)
+run '~/.tmux/plugins/tpm/tpm'
+
+# -----------------------------------------------------------------------------
+# 结束
+# -----------------------------------------------------------------------------
 
 ==========================================================================================================
 debian 安装,配置，使用git
@@ -911,3 +1122,52 @@ git push origin [branch name]
 git branch -d [branch name]
 删除远程分支
 git push origin :[branch name]
+
+==========================================================================================================
+git搭建服务器 https://www.haorooms.com/post/centos_git
+==========================================================================================================
+想了一下，本文标题是CentOS7搭建git 服务器，还是讲一下原生方式搭建git服务器吧！
+
+第一步，安装git：
+
+$ yum install git
+第二步，创建一个git用户，用来运行git服务：
+
+$ sudo adduser git
+第三步，创建证书登录：
+
+收集所有需要登录的用户的公钥，就是他们自己的id_rsa.pub文件，把所有公钥导入到
+
+/home/git/.ssh/authorized_keys
+文件里，一行一个。（也是通过这个方法关联git公钥的）
+
+第四步，初始化Git仓库：
+
+先选定一个目录作为Git仓库，假定是/srv/haorooms.git，在/srv目录下输入命令：
+
+$ sudo git init --bare haorooms.git
+Git就会创建一个裸仓库，裸仓库没有工作区，因为服务器上的Git仓库纯粹是为了共享，所以不让用户直接登录到服务器上去改工作区，并且服务器上的Git仓库通常都以.git结尾。然后，把owner改为git(git用户)：
+
+$ sudo chown -R git:git haorooms.git
+第五步，禁用shell登录：
+
+出于安全考虑，第二步创建的git用户不允许登录shell，这可以通过编辑/etc/passwd文件完成。找到类似下面的一行：
+
+git:x:1001:1001:,,,:/home/git:/bin/bash
+改为：
+
+git:x:1001:1001:,,,:/home/git:/usr/bin/git-shell
+这样，git用户可以正常通过ssh使用git，但无法登录shell，因为我们为git用户指定的git-shell每次一登录就自动退出。
+
+第六步，克隆远程仓库：
+
+现在，可以通过git clone命令克隆远程仓库了，在各自的电脑上运行：
+
+$ git clone git@server:/srv/haorooms.git
+Cloning into 'sample'...
+warning: You appear to have cloned an empty repository.
+剩下的推送就简单了。
+
+这个方式的缺点我最上面写过了，git是全路径，假如你是放到/home/www/git/haorooms.git，那个clone地址就是：
+
+ $ git clone git@server:/home/www/git/haorooms.git
