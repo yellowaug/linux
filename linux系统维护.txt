@@ -36,6 +36,27 @@ SSR状态：
 /etc/init.d/shadowsocks-r status
 卸载SSR：
 ./shadowsocks-all.sh uninstall
+========================================
+v2ray用到的网站以及资料
+========================================
+
+拯救被墙的IP，CDN + v2ray:
+https://blog.sprov.xyz/2019/03/11/cdn-v2ray-safe-proxy/
+
+v2-ui，一个全新的多协议多用户 v2ray 面板:
+https://blog.sprov.xyz/2019/08/03/v2-ui/
+
+域名：
+https://dcc.godaddy.com/domains/
+https://www.freenom.com/zh/index.html?lang=zh
+CDN:
+https://dash.cloudflare.com
+v2-ui：
+安装教程：
+https://blog.sprov.xyz/2019/08/03/v2-ui/
+后台账号管理：
+http://144.168.59.208:65432/v2ray/clients/
+
 
 
 
