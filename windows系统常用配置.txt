@@ -43,3 +43,33 @@ https://blog.csdn.net/holandstone/article/details/7645709
 windows 清空连接数的方法
 net session /delete /y
 打印机服务器上再添加计划任务，每15分钟定时清除
+
+PowerShell 常用
+开启PW远程登录：
+远程端配置：
+Enable-PSRemoting
+
+开启服务后，设置谁可以通过PowerShell连接到本服务器，执行以下命令
+Set-Item wsman:\localhost\Client\Trustedhosts $ip
+其中ip为本地的IP地址。如果你的IP地址不稳定，可执行
+Set-Item wsman:\localhost\Client\Trustedhosts *
+
+再执行以下命令
+Test-WSMan $ip #本地或云服务器上
+Test-WSMan localhost #云服务器上
+
+本地端配置
+以管理员身份运行PowerShell，执行以下命令
+
+Enable-PSRemoting
+然后一直确定。
+
+如果出现了网络不安全的错误提示，可添加执行以下命令
+Enable-PSRemoting -SkipNetworkProfileCheck
+
+设置可以远程的IP地址，出于安全考虑，建议执行以下命令
+Set-Item WSMan:\localhost\Client\Trustedhosts $serverIP#只有一个服务器
+Set-Item WSMan:\localhost\Client\Trustedhosts "$serverIP1,$serverIP2,..."#有多个服务器 
+
+3、通过命令行远程连接
+Enter-PSSession -computer $ip 
