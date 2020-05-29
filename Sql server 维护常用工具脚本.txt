@@ -1,0 +1,187 @@
+SQL Server 数据库导出表命令行
+bcp mnmai_cjd.dbo.AbpUsers out D:\AbpUsers.csv -T -t '\t' -w
+bcp mnmai_cjd.dbo.MnmDoctors out D:\MnmDoctors.csv -T -t '\t' -w
+bcp mnmai_cjd.dbo.FactoryHospitals out D:\FactoryHospitals.csv -T -t '\t' -w
+bcp mnmai_cjd.dbo.HostpitalDoctors out D:\HostpitalDoctors.csv -T -t '\t' -w
+BCP导入
+bcp JJ_Sale.dbo.Customer in D:\Customertable.csv -T -t '\t' -w
+表分区
+https://www.cnblogs.com/knowledgesea/p/3696912.html
+表分区常用的脚步以及常见应用场景
+http://blog.itpub.net/26736162/viewspace-2641649/
+步骤：1.建立分区函数，2.建立分区构架，3.表分区，4重建索引
+============
+1.建立分区函数：
+Create Partition function $functionName(parameter_type) AS RANGE RIGHT
+FOR VALUES('boundary_value1','boundary_value2',...,'boundary_valueN')
+查看分区函数
+Select*from sys.Partition_functions
+删除分区函数
+drop partition function [$functionName]
+删除分区方案
+drop partition scheme [$schemename]
+如果删除分区或者分区方案时报Microsoft SQL Server, Error: 7717
+https://social.technet.microsoft.com/Forums/en-US/c6b3598f-3984-4d3d-84f8-0ddb3eb38a90/how-to-simply-remove-partition-schemes-or-partition-functions?forum=sqlgetstarted
+
+
+2.建立分区构架：
+CREATE PARTITION SCHEME $partition_scheme_name
+AS PARTITION $partition_function_name
+[ALL] or TO ($FileGroup1,[parmary],$FileGroupN)
+查看分区构架:
+Select*from sys.Partition_schemes
+
+查看特定数据在哪个分区中
+
+查看SQL Server 用户连接情况
+使用系统存储过程
+SP_WHO 'loginName'
+loginName 是当然登陆Sql的用户名，一般程序里面都会使用一个username来登陆SQL这样通过这个用户名就能查看到此用户名登陆之后占用的连接了。
+
+如果不写loginName，那么返回的就是所有的sql server数据库连接。
+列出所有活动的用户:SP_WHO ‘active’
+
+查询数据库当前连接
+select * from master.sys.sysprocesses where dbid = db_id('dbname')
+
+查看SQL server 阻塞情况
+url:https://www.cnblogs.com/kerrycode/p/3756692.html
+方法1：查看那个引起阻塞，查看blk不为0的记录，如果存在阻塞进程，则是该阻塞进程的会话 ID。否则该列为零。
+
+    EXEC sp_who active
+
+方法2：查看那个引起阻塞，查看字段BlkBy，这个能够得到比sp_who更多的信息。
+
+    EXEC sp_who2 active
+
+方法3：sp_lock 系统存储过程，报告有关锁的信息，但是不方便定位问题
+
+方法4：sp_who_lock存储过程
+
+查看阻塞情况脚本
+
+SELECT wt.blocking_session_id                  AS BlockingSessesionId
+      ,sp.program_name                         AS ProgramName
+      ,COALESCE(sp.LOGINAME, sp.nt_username)   AS HostName    
+      ,ec1.client_net_address                  AS ClientIpAddress
+      ,db.name                                 AS DatabaseName        
+      ,wt.wait_type                            AS WaitType                    
+      ,ec1.connect_time                        AS BlockingStartTime
+      ,wt.WAIT_DURATION_MS/1000                AS WaitDuration
+      ,ec1.session_id                          AS BlockedSessionId
+      ,h1.TEXT                                 AS BlockedSQLText
+      ,h2.TEXT                                 AS BlockingSQLText
+FROM sys.dm_tran_locks AS tl
+INNER JOIN sys.databases db
+  ON db.database_id = tl.resource_database_id
+INNER JOIN sys.dm_os_waiting_tasks AS wt
+  ON tl.lock_owner_address = wt.resource_address
+INNER JOIN sys.dm_exec_connections ec1
+  ON ec1.session_id = tl.request_session_id
+INNER JOIN sys.dm_exec_connections ec2
+  ON ec2.session_id = wt.blocking_session_id
+LEFT OUTER JOIN master.dbo.sysprocesses sp
+  ON SP.spid = wt.blocking_session_id
+CROSS APPLY sys.dm_exec_sql_text(ec1.most_recent_sql_handle) AS h1
+CROSS APPLY sys.dm_exec_sql_text(ec2.most_recent_sql_handle) AS h2
+
+sql server 性能调优之 资源等待 LCk：
+url：https://www.cnblogs.com/MrHSR/p/9319367.html
+
+Sql server 常用存储过程
+https://blog.51cto.com/ultrasql/1734219
+
+Sql server 查询数据库所有表的大小的存储过程以及使用
+url:
+https://blog.csdn.net/icecoola_/article/details/79650018
+Code:
+-- =============================================
+-- 描  述：更新查询数据库中各表的大小，结果存储到数据表中
+-- =============================================
+
+
+CREATE PROCEDURE [dbo].[sp_UpdateTableSpaceInfo]
+AS
+BEGIN
+    --查询是否存在结果存储表
+    IF NOT EXISTS (SELECT * FROM sysobjects where id = OBJECT_ID(N'temp_tableSpaceInfo') AND OBJECTPROPERTY(id, N'IsUserTable') = 1)
+    BEGIN
+        --不存在则创建
+        CREATE TABLE temp_tableSpaceInfo
+        (name NVARCHAR(128), 
+        rows char(11), 
+        reserved VARCHAR(18),
+        data VARCHAR(18),
+        index_size VARCHAR(18),
+        unused VARCHAR(18))
+    END
+    --清空数据表
+    DELETE FROM temp_tableSpaceInfo
+
+    --定义临时变量在遍历时存储表名称
+    DECLARE @tablename VARCHAR(255)
+
+    --使用游标读取数据库内所有表表名
+    DECLARE table_list_cursor CURSOR FOR 
+    SELECT name FROM sysobjects 
+    WHERE OBJECTPROPERTY(id, N'IsTable') = 1 AND name NOT LIKE N'#%%' ORDER BY name
+
+    --打开游标
+    OPEN table_list_cursor
+    --读取第一条数据
+    FETCH NEXT FROM table_list_cursor INTO @tablename 
+
+    --遍历查询到的表名
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        --检查当前表是否为用户表
+        IF EXISTS (SELECT * FROM sysobjects WHERE id = OBJECT_ID(@tablename) AND OBJECTPROPERTY(id, N'IsUserTable') = 1)
+        BEGIN
+            --当前表则读取其信息插入到表格中
+            EXECUTE sp_executesql N'INSERT INTO temp_tableSpaceInfo EXEC sp_spaceused @tbname', N'@tbname varchar(255)', @tbname = @tablename
+        END
+        --读取下一条数据
+        FETCH NEXT FROM table_list_cursor INTO @tablename 
+    END
+
+    --释放游标
+    CLOSE table_list_cursor
+    DEALLOCATE table_list_cursor
+END
+GO
+======使用方法=============
+EXEC sp_UpdateTableSpaceInfo
+go
+SELECT * FROM temp_tableSpaceInfo order by temp_tableSpaceInfo.name desc
+go
+
+收缩数据库日志文件的脚本
+在有些情况下该脚本无法使用
+方法1：
+    USE[master]
+    GO
+    ALTER DATABASE JJ_Sale SET RECOVERY SIMPLE WITH NO_WAIT
+    GO
+    ALTER DATABASE JJ_Sale SET RECOVERY SIMPLE   --简单模式
+    GO
+    USE JJ_Sale
+    GO
+    DBCC SHRINKFILE (N'JJ_Sale_1' , 2, TRUNCATEONLY)  --设置压缩后的日志大小为2M，可以自行指定
+    GO
+    USE[master]
+    GO
+    ALTER DATABASE JJ_Sale SET RECOVERY FULL WITH NO_WAIT
+    GO
+    ALTER DATABASE JJ_Sale SET RECOVERY FULL  --还原为完全模式
+    GO
+方法2： 
+打开企业管理器--右键你要压缩的数据库--所有任务--收缩数据库--收缩文件--选择日志文件--在收缩方式里选择收缩至: 这里会给出一个允许收缩到的最小M数,直接输入这个数,确定就可以了。
+注意修改下：在数据库－＞右键－＞属性－＞修改日志文件大小的初始值
+http://www.voidcn.com/article/p-kxsjrybh-hb.html
+
+
+查询数据库表的创建时间
+select name,crdate from sysobjects where xtype='u' order by crdate desc
+
+
+
