@@ -64,7 +64,7 @@ IPV6INIT=no
 HWADDR=00:0C:29:50:01:D1
 NM_COnTROLLED=no      
 ONBOOT=yes
-TYPE=Ethernet
+TYPE=Ethernet：
 
 获取Hwaddr
 ifconfig
@@ -1171,3 +1171,9 @@ warning: You appear to have cloned an empty repository.
 这个方式的缺点我最上面写过了，git是全路径，假如你是放到/home/www/git/haorooms.git，那个clone地址就是：
 
  $ git clone git@server:/home/www/git/haorooms.git
+
+ gitlab私有化仓库搭建
+ 安装需要的环境
+ https://www.cnblogs.com/youzhibing/p/12487043.ht
+ gitlab修改默认登录端口的方法
+ https://www.jianshu.com/p/5d8f4fc67379
