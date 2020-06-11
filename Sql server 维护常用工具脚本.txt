@@ -154,10 +154,13 @@ EXEC sp_UpdateTableSpaceInfo
 go
 SELECT * FROM temp_tableSpaceInfo order by temp_tableSpaceInfo.name desc
 go
-
-收缩数据库日志文件的脚本
+=====================================================================================
+收缩数据库日志文件大小的脚本，在有高可用集群的情况下，要先断开集群，然后在主节点上使用下列脚本
+运行完成后，需要重新搭建集群
+=====================================================================================
 在有些情况下该脚本无法使用
 方法1：
+--数据库JJ_Sale
     USE[master]
     GO
     ALTER DATABASE JJ_Sale SET RECOVERY SIMPLE WITH NO_WAIT
@@ -174,6 +177,40 @@ go
     GO
     ALTER DATABASE JJ_Sale SET RECOVERY FULL  --还原为完全模式
     GO
+--数据库JJ_System
+    USE[master]
+    GO
+    ALTER DATABASE JJ_System SET RECOVERY SIMPLE WITH NO_WAIT
+    GO
+    ALTER DATABASE JJ_System SET RECOVERY SIMPLE   --简单模式
+    GO
+    USE JJ_System
+    GO
+    DBCC SHRINKFILE (N'JJ_System_1' , 2, TRUNCATEONLY)  --设置压缩后的日志大小为2M，可以自行指定
+    GO
+    USE[master]
+    GO
+    ALTER DATABASE JJ_System SET RECOVERY FULL WITH NO_WAIT
+    GO
+    ALTER DATABASE JJ_System SET RECOVERY FULL  --还原为完全模式
+    GO
+--数据库JJ_Communication
+    USE[master]
+    GO
+    ALTER DATABASE JJ_Communication SET RECOVERY SIMPLE WITH NO_WAIT
+    GO
+    ALTER DATABASE JJ_Communication SET RECOVERY SIMPLE   --简单模式
+    GO
+    USE JJ_Communication
+    GO
+    DBCC SHRINKFILE (N'JJ_Communication_1' , 2, TRUNCATEONLY)  --设置压缩后的日志大小为2M，可以自行指定
+    GO
+    USE[master]
+    GO
+    ALTER DATABASE JJ_Communication SET RECOVERY FULL WITH NO_WAIT
+    GO
+    ALTER DATABASE JJ_Communication SET RECOVERY FULL  --还原为完全模式
+    GO
 方法2： 
 打开企业管理器--右键你要压缩的数据库--所有任务--收缩数据库--收缩文件--选择日志文件--在收缩方式里选择收缩至: 这里会给出一个允许收缩到的最小M数,直接输入这个数,确定就可以了。
 注意修改下：在数据库－＞右键－＞属性－＞修改日志文件大小的初始值
@@ -182,6 +219,8 @@ http://www.voidcn.com/article/p-kxsjrybh-hb.html
 
 查询数据库表的创建时间
 select name,crdate from sysobjects where xtype='u' order by crdate desc
+
+
 
 
 
