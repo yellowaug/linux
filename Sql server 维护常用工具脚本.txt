@@ -221,6 +221,74 @@ http://www.voidcn.com/article/p-kxsjrybh-hb.html
 select name,crdate from sysobjects where xtype='u' order by crdate desc
 
 
+=====================================================================================
+公司数据库数据表分区流程以及使用到的语句以及参考URL
+=====================================================================================
+教程URL：https://www.cnblogs.com/knowledgesea/p/3696912.html
+创建文件组
+操作语句
+alter database <数据库名> add filegroup <文件组名>
+语句实例
+alter database [JJ_System] add filegroup SystemData2018
+go
+alter database [JJ_System] add filegroup SystemData2019
+go
+alter database [JJ_System] add filegroup SystemData2020
+go
+删除文件组
+
+ALTER DATABASE [JJ_System] REMOVE FILEGROUP SystemData2018
+go
+ALTER DATABASE [JJ_System] REMOVE FILEGROUP SystemData2019
+go
+ALTER DATABASE [JJ_System] REMOVE FILEGROUP SystemData2020
+go
+
+创建数据文件到文件组里面
+操作语句
+alter database <数据库名称> add file <数据标识> to filegroup <文件组名称>
+--<数据标识> （name=N'文件名'，fliename=N'物理路径文件名'，size=N'文件初始大小kb/mb/gb/tb'，filegrowth=N'文件自动增量kb/mb/gb/tb/%',maxsize=N'文件可以增加到的最大大小kb/mb/gb/tb/unlimited'）
+语句实例
+------------------------------------
+表Annexdet
+------------------------------------
+alter database [JJ_System] add file 
+(name=N'Annexdet2018',filename=N'E:\DataBasePartition\Annexdetdata2018.ndf',size=5Mb,filegrowth=5mb) to filegroup SystemData2018
+go
+alter database [JJ_System] add file 
+(name=N'Annexdet2019', filename=N'E:\DataBasePartition\Annexdetdata2019.ndf',size=5Mb,filegrowth=5mb) to filegroup SystemData2019
+go
+alter database [JJ_System] add file 
+(name=N'Annexdet2020', filename=N'E:\DataBasePartition\Annexdetdata2020.ndf',size=5Mb,filegrowth=5mb) to filegroup SystemData2020
+go
+------------------------------------
+表historydata
+------------------------------------
+alter database [JJ_System] add file 
+(name=N'historydata2019',filename=N'E:\DataBasePartition\historydata2019.ndf',size=5Mb,filegrowth=5mb) to filegroup SystemData2019
+go
+alter database [JJ_System] add file 
+(name=N'historydata2020', filename=N'E:\DataBasePartition\historydata2020.ndf',size=5Mb,filegrowth=5mb) to filegroup SystemData2020
+go
 
 
+删除分区ndf文件
+ALTER DATABASE [JJ_System] REMOVE FILE Annexdet2018
+GO
+ALTER DATABASE [JJ_System] REMOVE FILE Annexdet2019
+GO
+ALTER DATABASE [JJ_System] REMOVE FILE Annexdet2020
+GO
+
+使用向导创建分区表
+根据URL的教程来操作 https://www.cnblogs.com/knowledgesea/p/3696912.html
+右键到要分区的表--- >> 存储 --- >> 创建分区 --- >>显示向导视图 --- >> 下一步 --- >> 下一步。。
+
+查询每个数据库的连接数
+SELECT name ,count(*) FROM (
+SELECT b.name,a.* FROM [Master].[dbo].[SYSPROCESSES] a 
+INNER JOIN [Master].[dbo].[SYSDATABASES] b 
+ON a.dbid=b.dbid
+)t 
+GROUP BY t.name
 
