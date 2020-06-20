@@ -1172,7 +1172,9 @@ warning: You appear to have cloned an empty repository.
 
  $ git clone git@server:/home/www/git/haorooms.git
 
+==========================================================================================================
  gitlab私有化仓库搭建
+==========================================================================================================
  安装需要的环境
  https://www.cnblogs.com/youzhibing/p/12487043.ht
  gitlab修改默认登录端口的方法
@@ -1181,6 +1183,107 @@ warning: You appear to have cloned an empty repository.
  https://cloud.tencent.com/developer/article/1114666
  gitlab修改默认的仓库存储目录及数据迁移
  https://blog.csdn.net/liuli905306022/article/details/89512896
+gitlab备份，自动备份脚本及命令行
+自动备份脚本
+https://www.jianshu.com/p/c33e76c4db03
+gitlab备份命令行
+https://blog.csdn.net/qq446282412/article/details/77070977
 
- 
- 
+==========================================================================================================
+gitlab 自动备份脚本
+==========================================================================================================
+#!/bin/bash
+
+#Gitlab 备份地址
+LocalBackDir=/home/backgitlabdata
+
+#服务机gitlab配置文件地址
+#正式环境地址：
+ConfigDir=/etc/gitlab/gitlab.rb
+
+#nginx配置文件地址
+#正式环境地址：NginxDir=/home/dgd/gitlab/data/nginx/conf
+
+#邮件配置地址
+#MailDir=/etc/postfix/main.cf
+
+#Backup server 存储路径
+RemoteBackDir=/home/gitlabback
+
+#远程备份使用用户及端口
+RemoteUser=root
+RemotePort=22
+
+#备份服务器IP
+RemoteIP=10.12.2.50
+
+#以当前时间戳创建备份目录
+bakname=$(date -d "today" +"%Y%m%d_%H%M%S")
+BakDir=$LocalBackDir/$bakname
+mkdir $BakDir
+
+#备份日志文件
+LogFile=$LocalBackDir/remote_backup.log
+
+#新建备份日志文件
+touch $LogFile
+
+#记录配置文件备份日志
+echo "Gitlab configure file auto backup at local server, start at  $(date +"%Y-%m-%d %H:%M:%S")" >>  $LogFile
+echo "--------------------------------------------------------------------------" >> $LogFile
+
+#拷贝配置文件
+cp $ConfigDir $BakDir >> $LogFile 2>&1
+#cp -r $NginxDir $BakDir >> $LogFile 2>&1
+#cp $MailDir $BakDir >> $LogFile 2>&1
+
+#记录本地生成gitlab备份日志
+echo "Gitlab auto backup at local server, start at  $(date +"%Y-%m-%d %H:%M:%S")" >>  $LogFile
+echo "--------------------------------------------------------------------------" >> $LogFile
+
+#执行gitlab本地备份
+#docker exec  gitlab_ce_zh gitlab-rake gitlab:backup:create >> $LogFile 2>&1
+gitlab-rake gitlab:backup:create >> $LogFile 2>&1
+
+# $?符号显示上一条命令的返回值，如果为0则代表执行成功，其他表示失败
+if [ $? -eq 0 ];then
+   #追加日志到日志文件
+   echo "--------------------------------Success!-------------------------------" >> $LogFile
+   echo "Gitlab auto backup at local server, end at $(date +"%Y-%m-%d %H:%M:%S")" >> $LogFile
+else
+   #追加日志到日志文件
+   echo "--------------------------------Failed!----------------------------------" >> $LogFile
+   echo "Gitlab auto backup at local server failed at $(date +"%Y-%m-%d %H:%M:%S")" >> $LogFile
+fi
+
+
+#查找本地备份目录修改时间为10分钟以内且后缀为.tar的Gitlab备份文件
+Backfile_Send_To_Remote=`find $LocalBackDir -type f  -mmin -10 -name '*.tar'` >> $LogFile 2>&1
+
+#移动生成的备份文件到配置文件备份地址
+mv -bfu $Backfile_Send_To_Remote $BakDir 
+
+
+#记录备份日志
+echo "$(date +"%Y-%m-%d %H:%M:%S") Gitlab auto backup to remote server." >> $LogFile
+echo "--------------------------------------------" >> $LogFile
+
+#打印每次备份的档案名
+echo "The files need send to remote server is: $Backfile_Send_To_Remote" >> $LogFile
+
+# 本地传输Gitlab备份档案到远程
+scp -r $RemotePort $BakDir $RemoteUser@$RemoteIP:$RemoteBackDir
+
+# 备份结果追加到备份日志
+if [ $? -eq 0 ];then
+  echo ""
+  echo "$(date +"%Y-%m-%d %H:%M:%S") Gitlab Remote Backup Succeed!" >> $LogFile
+else
+  echo "$(date +"%Y-%m-%d %H:%M:%S") Gitlab Remote Backup Failed!" >> $LogFile
+fi
+
+==========================================================================================================
+gitlab 自动删除备份脚本
+==========================================================================================================
+find /data -mtime +7 -type d -name "*" -exec rm -rf {} \;
+# 寻找并删除/data目录下内容修改时间（mtime）为7天以前的文件夹（-type d），并删除（rm -rf）
