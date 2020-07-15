@@ -292,3 +292,13 @@ ON a.dbid=b.dbid
 )t 
 GROUP BY t.name
 
+数据库还原脚本
+
+USE [master]
+BACKUP LOG [JJ_Communication] TO  DISK = N'D:\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER2012\MSSQL\Backup\JJ_Communication_LogBackup_2020-06-29_10-13-42.bak' WITH NOFORMAT, NOINIT,  NAME = N'JJ_Communication_LogBackup_2020-06-29_10-13-42', NOSKIP, NOREWIND, NOUNLOAD,  NORECOVERY ,  STATS = 5
+RESTORE DATABASE [JJ_Communication] FROM  DISK = N'E:\shujukutongbu\20200628T010000\JJ_Communication' WITH  FILE = 1,  NOUNLOAD,  STATS = 5
+GO
+
+
+
+
