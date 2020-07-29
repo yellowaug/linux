@@ -1,0 +1,34 @@
+更新系统时间：
+sudo date -s '29 Jul 2020 11:26'--现在是什么时间就是什么时间
+更新系统源：
+nano /etc/apt/sources.list` 文件，删除原文件所有内容，用以下内容取代：
+deb http://mirrors.tuna.tsinghua.edu.cn/raspberry-pi-os/raspbian/ buster main non-free contrib rpi
+deb-src http://mirrors.tuna.tsinghua.edu.cn/raspberry-pi-os/raspbian/ buster main non-free contrib rpi
+
+nano /etc/apt/sources.list.d/raspi.list` 文件，删除原文件所有内容，用以下内容取代：
+deb http://mirrors.tuna.tsinghua.edu.cn/raspberrypi/ buster main ui
+安装Nginx 
+ apt-get install nginx -y
+启动Nginx
+systemctl start nginx
+查看Nginx 状态
+systemctl status nginx
+
+修改nginx配置文件
+sudo nano /etc/nginx/sites-available/default
+
+修改Index网页内容：
+
+根目录路径：/var/www/html
+修改内容:
+<h1>Just for Power Monitor</h1>
+
+设置树莓派固定IP地址
+vim /etc/dhcpcd.conf
+修改内容：
+# Example static IP configuration:
+interface eth0
+static ip_address=10.12.2.100/24
+#static ip6_address=fd51:42f8:caae:d92e::ff/64
+static routers=10.12.2.254
+static domain_name_servers=10.12.2.250
