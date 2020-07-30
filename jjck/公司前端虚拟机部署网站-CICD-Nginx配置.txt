@@ -1,0 +1,97 @@
+安装epel
+yum install epel-release
+====================================================================================================================================================================
+安装nginx
+yum install nginx
+----------------------------------------------------------------------------------------
+配置nginx
+----------------------------------------------------------------------------------------
+所有配置文件都在 /etc/nginx/目录中
+Nginx 的主配置文件再 /etc/nginx/nginx.conf
+通过以上方式安装的 Nginx，所有相关的配置文件都在 /etc/nginx/ 目录中。 
+Nginx 的主配置文件是 /etc/nginx/nginx.conf。 为了使 Nginx 配置更易于维护，建议为每个服务（域名）创建一个单独的配置文件。 
+每一个独立的 Nginx 服务配置文件都必须以 .conf 结尾，并存储在 /etc/nginx/conf.d 目录中。
+您可以根据需求，创建任意多个独立的配置文件。 
+独立的配置文件，建议遵循以下命名约定，比如你的域名是 kaifazhinan.com，那么你的配置文件的应该是这样的 /etc/nginx/conf.d/kaifazhinan.com.conf，如果你在一个服务器中部署多个服务，当然你也可以在文件名中加上 Nginx 转发的端口号，比如 kaifazhinan.com.3000.conf，这样做看起来会更加友好。 
+如果你的配置中有很多重复的代码，那么建议你创建一个 /etc/nginx/snippets 文件夹，在这里面存放所有会被复用的代码块，然后在各个需要用到的 Nginx 的配置文件中引用进去，这样可以更方便管理和修改。 
+Nginx 日志文件（access.log 和 error.log ）位于 /var/log/nginx/ 目录中。建议为每个独立的服务配置不同的访问权限和错误日志文件，这样查找错误时，会更加方便快捷。 
+你可以将要部署的代码文件，存储在任何你想的位置，但是一般推荐存放在下列位置中的其中一个： 
+/home/<user_name>/<site_name> 
+/var/www/<site_name> 
+/var/www/html/<site_name> 
+/opt/<site_name> 
+/usr/share/nginx/html
+====================================================================================================================================================================
+安装note.js
+sudo yum install epel-release
+sudo yum install nodejs
+====================================================================================================================================================================
+安装git
+yum install git -y
+====================================================================================================================================================================
+安装gitlab runner
+# 添加yum源
+curl -L https://packages.gitlab.com/install/repositories/runner/gitlab-ci-multi-runner/script.rpm.sh | sudo bash
+# 安装
+yum install gitlab-runner
+# 查看版本
+gitlab-runner -v
+#配置注册信息 
+gitlab-runner register，然后录入注册信息
+自定义构建目录
+对应的配置文件在 /etc/gitlab-runner/config.toml
+修改内容
+ #配置构建的根目录
+  builds_dir = "/www/wwwroot"
+#允许用户自定义构建目录 gitbab-ci.yml 变量  GIT_CLONE_PATH
+  [runners.custom_build_dir]
+    enabled = true
+对应执行命令：
+# 运行
+gitlab-runner run
+# 启动（后台运行）
+gitlab-runner start
+# 重启
+gitlab-runner restart
+# 通过name 取消注册
+gitlab-runner unregister --name develop
+# 删除所有注册runner
+gitlab-runner unregister --all-runners
+在项目中添加.gitlab-ci.yml 文件
+====================================================================================================================================================================
+配置.gitlab-ci.yml 注意：当你是自定义目录权限的时候你需要更改文件夹的所属用户组以及用户，要不然会提示权限不足
+查看用户组：
+====================================================================================================================================================================
+前端配置文件模板
+before_script:
+
+  - cd $env:programpath
+
+stages:
+  - deploy
+deploy:
+  stage: deploy
+  # 将会执行的脚本
+  script:
+        - msbuild LearnAbp.sln /m /p:Configuration=Release
+        # 停止 IIS 对应站点
+        - appcmd stop site $env:webname
+        # 停止进程池
+        - appcmd.exe stop apppool /apppool.name:"$env:webname"
+        #复制编译文件到指定的网站目录
+        - xcopy $env:programpath\LearnAbp.Web $env:sitepath /s /e /y 
+        # 启动进程池
+        - appcmd.exe start apppool /apppool.name:"$env:webname"
+        # 启动 IIS 站点
+        - appcmd.exe start site $env:webname
+  # 哪个分支会执行
+  only:
+    - master
+    #runner 注册时的 tag，这里指会触发的 runner
+  tags:
+    - testci
+
+
+
+
+
