@@ -21,6 +21,31 @@ Nginx 日志文件（access.log 和 error.log ）位于 /var/log/nginx/ 目录�
 /var/www/html/<site_name> 
 /opt/<site_name> 
 /usr/share/nginx/html
+----------------------------------------------------------------------------------------
+nginx配置内容
+----------------------------------------------------------------------------------------
+    server {
+        listen       80;
+        server_name  localhost;
+
+        #charset koi8-r;
+
+        #access_log  logs/host.access.log  main;
+
+        location / {
+            root   html;
+            index  index.html index.htm;
+        }
+
+        #error_page  404              /404.html;
+
+        # redirect server error pages to the static page /50x.html
+        #
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+
 ====================================================================================================================================================================
 安装note.js
 
@@ -70,6 +95,9 @@ gitlab-runner unregister --all-runners
 查看用户组：
 ====================================================================================================================================================================
 前端配置文件模板
+
+
+后端配置文件模板
 before_script:
 
   - cd $env:programpath
