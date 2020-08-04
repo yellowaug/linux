@@ -71,6 +71,11 @@ https://www.codepeople.cn/2019/10/09/CentOS7.4-install-nodejs/
 $ npm install -g n
 n latest
 
+注意，安装完npm后要更换源，要不然ci/cd的时间会很久甚至会卡死
+查看npm源地址
+npm config get registry
+使用淘宝镜像：
+npm config set registry https://registry.npm.taobao.org
 ====================================================================================================================================================================
 安装git
 yum install git -y
@@ -92,6 +97,19 @@ gitlab-runner register，然后录入注册信息
 #允许用户自定义构建目录 gitbab-ci.yml 变量  GIT_CLONE_PATH
   [runners.custom_build_dir]
     enabled = true
+----------------------------------------------------------------------------------------
+更改gitlab-runner 执行用户：
+http://www.fidding.me/article/111
+查看运行用户：
+ps aux|grep gitlab-runner
+删除gitlab-runner：
+sudo gitlab-runner uninstall
+安装并设置--user(例如我想设置为root)：
+gitlab-runner install --working-directory /home/gitlab-runner --user root
+重启gitlab-runner：
+sudo service gitlab-runner restart
+
+----------------------------------------------------------------------------------------
 对应执行命令：
 # 运行
 gitlab-runner run
