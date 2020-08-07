@@ -1,0 +1,6 @@
+API站点早上登录时无响应，抓包返回no response body，CDN提示回源失败
+-----------------------------------------------------------------
+解决方式：
+IIS的预加载注意配置是否被更改，检查Web.config文件中
+<applicationInitialization doAppInitAfterRestart="true" />
+是否存在，不存在的话第一次加载就会特别慢，导致CDN回源失败
