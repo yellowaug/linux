@@ -4,7 +4,7 @@
 echo "开始运行构建脚本"
 cd /home/gitlab-runner/builds/AvosHvWw/0/mnmqianduan/muniumaweb/factory
 echo "运行 npm install"
-npm install
+npm install --build-from-source
 echo "运行 npm run build"
 npm run build
 echo "停止nginx"
