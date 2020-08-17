@@ -1,6 +1,7 @@
 #! /bin/bash
 # 这个是平台platform端的发布脚本
-
+echo "开始配置正式服务器配置文件"
+cp -rf /home/hostconfig/platform/* /home/gitlab-runner/builds/AvosHvWw/0/mnmqianduan/muniumaweb/platform/config
 echo "开始运行构建脚本"
 cd /home/gitlab-runner/builds/AvosHvWw/0/mnmqianduan/muniumaweb/platform
 echo "运行 npm install"
