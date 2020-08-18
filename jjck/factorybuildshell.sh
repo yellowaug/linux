@@ -1,7 +1,8 @@
 #! /bin/bash
 # 这个是工厂factory端的发布脚本
 echo "开始配置正式服务器配置文件"
-cp -rf /home/hostconfig/factory/* /home/gitlab-runner/builds/AvosHvWw/0/mnmqianduan/muniumaweb/factory/src/utils
+cp -rf /home/hostconfig/factory/request.js /home/gitlab-runner/builds/AvosHvWw/0/mnmqianduan/muniumaweb/factory/src/utils
+cp -rf /home/hostconfig/factory/variable.js /home/gitlab-runner/builds/AvosHvWw/0/mnmqianduan/muniumaweb/factory/src/api
 echo "开始运行构建脚本"
 cd /home/gitlab-runner/builds/AvosHvWw/0/mnmqianduan/muniumaweb/factory
 echo "运行 npm install"
