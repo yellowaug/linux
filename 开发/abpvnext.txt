@@ -1,0 +1,3 @@
+Abp vnext创建项目
+abp new JJCK.StaffPerformanceSystem --template app --database-provider ef --ui mvc --mobile none
+Acme.BookStore -- 项目名
