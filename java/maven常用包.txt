@@ -1,0 +1,10 @@
+解决maven项目生成卡顿的问题：
+https://blog.csdn.net/rock154/article/details/79406380
+
+1）可先下载好archetype-catalog.xml (6.32M)，
+下载地址：https://repo1.maven.org/maven2/
+放到：
+C:\Users\Administrator\.m2\repository\org\apache\maven\archetype\archetype-catalog\3.0.1
+2）
+再设置如下VM Options: -DarchetypeCatalog=internal。
+注意是File 菜单的Other settings - Default settings

@@ -1,28 +1,21 @@
 #!/bin/bash
-# echo "Input process name first"
-# read input1
-echo "正在检查node服务器进程"
-PID=$(ps x | grep node | grep -v grep | awk '{print $1}')
-
-if [ $? -eq 0 ]; then
-    echo "process id:$PID"
-else
-    echo "process node not exit"
-fi
-
-echo "kill process"
-kill -9 ${PID}
-
-if [ $? -eq 0 ];then
-    echo "kill node success"
-else
-    echo "kill node fail"
-fi
 echo "进程检查完成"
 echo "正在安装依赖包"
 #cd /home/gitlab-runner/builds/GzKsKQ9J/0/qinzhiquan/chat/NIM_Web_Demo_H5-master
-npm install
+cd /home/gitlab-runner/builds/GzKsKQ9J/0/qinzhiquan/chat
+rm -rf node_modules
+rm -rf dist
+cnpm install
 echo "依赖包安装完成"
-echo "运行服务"
-npm run server &
+echo "编译依赖包"
+npm run buildend
+echo "正在部署项目"
+systemctl stop nginx
+rm -rf /home/gitlab-runner/project/chat/*
+cp -rf ./dist /home/gitlab-runner/project/chat
+cp -f ./index.html /home/gitlab-runner/project/chat
+cp -f ./login.html /home/gitlab-runner/project/chat
+cp -f ./regist.html /home/gitlab-runner/project/chat
+systemctl start nginx
+
 
