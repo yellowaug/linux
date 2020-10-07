@@ -1,0 +1,90 @@
+mybaits-spring  xml 配置融合模板
+============================================================================
+mybaits-spring注意事项
+============================================================================
+Dao 接口文件名称要与SQL map文件的名称保持一致
+============================================================================
+mybaits配置文件
+============================================================================
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+<!--    设置日志-->
+    <settings>
+        <setting name="logImpl" value="STDOUT_LOGGING"/>
+    </settings>
+<!--    类型别名
+类型别名可为 Java 类型设置一个缩写名字。 它仅用于 XML 配置，意在降低冗余的全限定类名书写
+-->
+    <typeAliases>
+        <package name="org.Dao"/>
+        <package name="org.Entity"/>
+    </typeAliases>
+<!--    映射器，Mapper xml文件的包，一般是Dao那个包的全限定路径-->
+    <mappers>
+        <package name="org.Dao"/>
+        <!--        <mapper resource=""/>-->
+    </mappers>
+</configuration>
+============================================================================
+mybaits sql 语句配置文件
+============================================================================
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--sql 语句映射文件
+namespace Dao包的全限定名称
+id Dao接口方法的名称
+resultType 返期望从这条语句中返回结果的类全限定名或别名
+-->
+<mapper namespace="org.Dao.ICustomersDao">
+    <select id="selectCustomers" resultType="customers">
+        select * from Customers
+    </select>
+    <select id="orderCustomers" resultType="customers">
+        select * from Customers order by Id
+    </select>
+</mapper>
+============================================================================
+mybaits 连接池配置文件
+============================================================================
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+<!--DRUID连接池基本配置
+defaultCatalog 数据库名称
+-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+        <property name="url" value="jdbc:sqlserver://10.12.2.61:1433" />
+        <property name="username" value="sa" />
+        <property name="password" value="sa" />
+        <property name="defaultCatalog" value="TestDemo"/>
+    </bean>
+<!--    对象工厂
+dataSource 连接池bean id 名称
+configLocation mybatis 路径全限定名称
+-->
+    <bean id="sessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="classpath:mybatis.xml" />
+    </bean>
+<!--    map扫描
+    sqlSessionFactoryBeanName 对象工厂bean id名称
+    SQL 语句映射文件扫描路径全限定名称
+-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sessionFactory" />
+        <property name="basePackage" value="org.Dao"/>
+    </bean>
+
+    <!--    声明Service，正常情况下是使用Service，而不是Dao-->
+    <bean id="service" class="org.service.CustomersService">
+        <property name="customersDao" ref="ICustomersDao"/>
+    </bean>
+<!--事务管理器-->
+    <bean id="manager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" />
+</beans>
