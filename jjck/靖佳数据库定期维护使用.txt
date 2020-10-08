@@ -1,0 +1,98 @@
+数据库日志收缩
+=======================================================================
+是否需要停机  ---- ？
+是否需要重启  ---- ？
+是否需要停止IIS服务器 ---- ？
+=======================================================================
+运行脚本
+=======================================================================
+方法1：
+--数据库JJ_Sale
+    USE[master]
+    GO
+    ALTER DATABASE JJ_Sale SET RECOVERY SIMPLE WITH NO_WAIT
+    GO
+    ALTER DATABASE JJ_Sale SET RECOVERY SIMPLE   --简单模式
+    GO
+    USE JJ_Sale
+    GO
+    DBCC SHRINKFILE (N'JJ_Sale_1' , 2, TRUNCATEONLY)  --设置压缩后的日志大小为2M，可以自行指定
+    GO
+    USE[master]
+    GO
+    ALTER DATABASE JJ_Sale SET RECOVERY FULL WITH NO_WAIT
+    GO
+    ALTER DATABASE JJ_Sale SET RECOVERY FULL  --还原为完全模式
+    GO
+--数据库JJ_System
+    USE[master]
+    GO
+    ALTER DATABASE JJ_System SET RECOVERY SIMPLE WITH NO_WAIT
+    GO
+    ALTER DATABASE JJ_System SET RECOVERY SIMPLE   --简单模式
+    GO
+    USE JJ_System
+    GO
+    DBCC SHRINKFILE (N'JJ_System_1' , 2, TRUNCATEONLY)  --设置压缩后的日志大小为2M，可以自行指定
+    GO
+    USE[master]
+    GO
+    ALTER DATABASE JJ_System SET RECOVERY FULL WITH NO_WAIT
+    GO
+    ALTER DATABASE JJ_System SET RECOVERY FULL  --还原为完全模式
+    GO
+--数据库JJ_Communication
+    USE[master]
+    GO
+    ALTER DATABASE JJ_Communication SET RECOVERY SIMPLE WITH NO_WAIT
+    GO
+    ALTER DATABASE JJ_Communication SET RECOVERY SIMPLE   --简单模式
+    GO
+    USE JJ_Communication
+    GO
+    DBCC SHRINKFILE (N'JJ_Communication_1' , 2, TRUNCATEONLY)  --设置压缩后的日志大小为2M，可以自行指定
+    GO
+    USE[master]
+    GO
+    ALTER DATABASE JJ_Communication SET RECOVERY FULL WITH NO_WAIT
+    GO
+    ALTER DATABASE JJ_Communication SET RECOVERY FULL  --还原为完全模式
+    GO
+=======================================================================
+在运行脚本失效的情况下
+=======================================================================  
+方法2： 
+打开企业管理器--右键你要压缩的数据库--所有任务--收缩数据库--收缩文件--选择日志文件--在收缩方式里选择收缩至: 这里会给出一个允许收缩到的最小M数,直接输入这个数,确定就可以了。
+注意修改下：在数据库－＞右键－＞属性－＞修改日志文件大小的初始值
+http://www.voidcn.com/article/p-kxsjrybh-hb.html
+=======================================================================
+数据库文件迁移
+=======================================================================
+是否需要停机  ---- 是
+是否需要重启  ---- 否
+是否需要停止IIS服务器 ---- 是
+=======================================================================
+迁移数据库文件遇到的问题
+=======================================================================
+附件数据库后数据库出现只读的问题
+https://blog.csdn.net/duanbeibei/article/details/52299590
+
+取消只读
+USE [master]  
+GO  
+
+ALTER DATABASE [DBNAME] SET READ_WRITE WITH NO_WAIT  
+GO 
+
+提示：
+无法打开物理文件mdf，操作系统错误 5:"5(拒绝访问。)
+https://blog.csdn.net/crazygolf/article/details/40296729
+解决方案：
+找到要附加的mdf文件-》右键-》属性-》安全-》选择当前用户-》编辑，勾选完全控制权限，确定。
+对log文件相同操作。
+=======================================================================
+数据库迁移操作
+=======================================================================
+分离数据库==》右键==》分离==》勾选删除信息以及更新信息选项==》点击确定
+附件数据库==》右键数据库==》附加==》选择要附加的数据库==》点击确定
+
