@@ -16,7 +16,7 @@
     GO
     USE JJ_Sale
     GO
-    DBCC SHRINKFILE (N'JJ_Sale_1' , 2, TRUNCATEONLY)  --设置压缩后的日志大小为2M，可以自行指定
+    DBCC SHRINKFILE (N'Sale_log' , 2, TRUNCATEONLY)  --设置压缩后的日志大小为2M，可以自行指定
     GO
     USE[master]
     GO
@@ -33,7 +33,7 @@
     GO
     USE JJ_System
     GO
-    DBCC SHRINKFILE (N'JJ_System_1' , 2, TRUNCATEONLY)  --设置压缩后的日志大小为2M，可以自行指定
+    DBCC SHRINKFILE (N'LBOA_log' , 2, TRUNCATEONLY)  --设置压缩后的日志大小为2M，可以自行指定
     GO
     USE[master]
     GO
@@ -50,7 +50,7 @@
     GO
     USE JJ_Communication
     GO
-    DBCC SHRINKFILE (N'JJ_Communication_1' , 2, TRUNCATEONLY)  --设置压缩后的日志大小为2M，可以自行指定
+    DBCC SHRINKFILE (N'JJ_Communication_log' , 2, TRUNCATEONLY)  --设置压缩后的日志大小为2M，可以自行指定
     GO
     USE[master]
     GO
