@@ -4,6 +4,10 @@ mybaits-spring注意事项
 ============================================================================
 Dao 接口文件名称要与SQL map文件的名称保持一致
 ============================================================================
+IOC注解，当使用注解@Component时，需要添加组件扫描器
+============================================================================
+<context:component-scan base-package="org.Domain"/>
+============================================================================
 mybaits配置文件
 ============================================================================
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -47,6 +51,9 @@ resultType 返期望从这条语句中返回结果的类全限定名或别名
     <select id="orderCustomers" resultType="customers">
         select * from Customers order by Id
     </select>
+    <insert id="insertGoods">
+        insert into Goods(name,amount,price) values (#{name},#{amount},#{price})
+    </insert>
 </mapper>
 ============================================================================
 mybaits 连接池配置文件
