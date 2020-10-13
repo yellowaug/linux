@@ -5,4 +5,24 @@ public class ${NAME}{
     private String xx;
     private float xx1;
 }
+===========================================
+事务--注解的实现方式
+===========================================
+    @Transactional(
+            //传播方式
+            propagation = Propagation.REQUIRED,
+            //默认级别
+            isolation = Isolation.DEFAULT,
+            //是否只读
+            readOnly = false,
+            //回滚类
+            rollbackFor = {
+//                    异常类
+                    NullPointerException.class,
+                    NotEnoughException.class
+            }
+    )
+public void buyGoods(Integer xx, Integer xx1){
+    code context
+}
     
