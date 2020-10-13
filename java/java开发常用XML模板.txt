@@ -93,5 +93,13 @@ configLocation mybatis 路径全限定名称
         <property name="customersDao" ref="ICustomersDao"/>
     </bean>
 <!--事务管理器-->
-    <bean id="manager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" />
+    <!--    使用spring事务管理器-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+<!--        连接数据库，指定数据源-->
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <!--        开启事务注解驱动
+    transactionManager 事务管理器的对象ID
+    -->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
 </beans>
