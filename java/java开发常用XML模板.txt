@@ -147,3 +147,35 @@ web.xml 文件配置 更换版本
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
          version="4.0">
 </web-app>
+----------------------------------------------------------------------------
+web.xml 文件配置
+servlet-name：类名称
+servlet-class：类的全限定名称
+servlet-mapping
+url-pattern :reg就是在html中action标签所需要填的内容
+----------------------------------------------------------------------------
+    <servlet>
+        <servlet-name>RegisterServlet</servlet-name>
+        <servlet-class>Controller.RegisterServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RegisterServlet</servlet-name>
+<!--        reg就是在html中action标签所需要填的内容-->
+        <url-pattern>/reg</url-pattern>
+    </servlet-mapping>
+----------------------------------------------------------------------------
+监听器：
+----------------------------------------------------------------------------
+    <context-param>
+<!--        contextConfigLocation表示文件的路径
+    baen文件所在的路径
+-->
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:appConfig.xml</param-value>
+    </context-param>
+<!--       
+建立监听器
+-->
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>

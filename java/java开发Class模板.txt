@@ -31,3 +31,37 @@ public void buyGoods(Integer xx, Integer xx1){
 在代码中只需要写业务代码即可，不需要注释
 事务的实现全部在XML配置文件中，具体可看xml模板
 
+=========================================== 
+容器对象
+=========================================== 
+web项目中容器对象只需要创建一次，把容器对象放入全局作用域ServletContext中。
+实现：
+创建监听器，当全局对象被创建时存入ServletContext
+
+创建监听器的代码：
+public class YourServlet extends HttpServlet
+{
+    ***
+    业务代码
+    ***
+    //        自己实现的监听器
+    WebApplicationContext ac=null;
+    -------------------------------------------------------------------------
+    String key=WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE;
+    Object ctx=getServletContext().getAttribute(key);
+    System.out.println(ctx);
+    if (ctx!=null){
+        ac=(WebApplicationContext)ctx;
+    }
+    -------------------------------------------------------------------------
+    //        使用框架的工具方法创建监听器
+    ServletContext sc=getServletContext();
+    ac= WebApplicationContextUtils.getRequiredWebApplicationContext(sc);
+    -------------------------------------------------------------------------
+    YourService service= (YourService) ac.getBean("yourBeanName");
+    ***
+    业务代码
+    ***
+
+    request.getRequestDispatcher("/result.jsp").forward(request,response); //页面跳转
+}

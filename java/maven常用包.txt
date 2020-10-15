@@ -118,6 +118,12 @@ spring web 相关依赖项
       <version>2.2.1-b03</version>
       <scope>provided</scope>
     </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework/spring-web -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
+      <version>5.2.9.RELEASE</version>
+    </dependency>
 ==========================================================================
 Build模块 
 --------------------------------------------------------------------------
