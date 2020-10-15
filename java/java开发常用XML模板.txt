@@ -92,7 +92,7 @@ configLocation mybatis 路径全限定名称
     <bean id="service" class="org.service.CustomersService">
         <property name="customersDao" ref="ICustomersDao"/>
     </bean>
-<!--事务管理器-->
+<!--事务管理器（使用注解）-->
     <!--    使用spring事务管理器-->
     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
 <!--        连接数据库，指定数据源-->
@@ -103,3 +103,47 @@ configLocation mybatis 路径全限定名称
     -->
     <tx:annotation-driven transaction-manager="transactionManager"/>
 </beans>
+<!--事务管理器（使用XML）-->
+<!--    业务方法的事务属性(隔离级别，传播行为，超时时间)
+        name:方法名称，可以是全限定名称，也可以带有通配符
+        propagation：传播行为
+        isolation：隔离级别
+        rollback-for：异常类全限定名称，发生异常即回滚
+-->
+    <tx:advice id="interceptor" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="buy*" propagation="REQUIRED" isolation="DEFAULT"
+                       rollback-for="org.Except.NotEnoughException,java.lang.NullPointerException"/>
+        </tx:attributes>
+    </tx:advice>
+<!--    配置AOP
+    配置切入点表达式，指定那些类使用事务
+    id:自定义
+    expression：全限定包名，或者用通配符，指定开启事务的类
+-->
+    <aop:config>
+        <aop:pointcut id="serivcePt" expression="execution(* org.Service.*.*(..))"/>
+<!--        配置增强器，关联业务方法的事务属性和AOP配置
+            advice-ref:通知，tx:advice的ID
+            pointcut-ref aop:pointcut的ID
+-->
+        <aop:advisor advice-ref="interceptor" pointcut-ref="serivcePt"/>
+
+    </aop:config>
+============================================================================
+spring-web项目
+============================================================================
+web项目在服务器上运行，tomcat一起动，需要一直运行
+----------------------------------------------------------------------------
+业务：
+学生提交姓名年龄，完成注册
+流程：
+选择模板：maven-archetype-webapp
+----------------------------------------------------------------------------
+web.xml 文件配置 更换版本
+----------------------------------------------------------------------------
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+         version="4.0">
+</web-app>

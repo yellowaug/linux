@@ -104,7 +104,24 @@ sql 相关依赖项
       <version>1.1.24</version>
     </dependency>
 ==========================================================================
-sql 相关依赖的Build模块 
+spring web 相关依赖项
+==========================================================================   
+<!--    spring web相关依赖-->
+     <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>4.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet.jsp</groupId>
+      <artifactId>jsp-api</artifactId>
+      <version>2.2.1-b03</version>
+      <scope>provided</scope>
+    </dependency>
+==========================================================================
+Build模块 
+--------------------------------------------------------------------------
+sql相关依赖
 --------------------------------------------------------------------------
 没有这个模块是会报错：
 org.apache.ibatis.binding.BindingException: Invalid bound statement (not found)

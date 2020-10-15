@@ -6,7 +6,7 @@ public class ${NAME}{
     private float xx1;
 }
 ===========================================
-事务--注解的实现方式
+事务--注解的实现方式(实话中小项目)
 ===========================================
     @Transactional(
             //传播方式
@@ -17,7 +17,7 @@ public class ${NAME}{
             readOnly = false,
             //回滚类
             rollbackFor = {
-//                    异常类
+//                    异常类，表示发生指定的异常一定回滚
                     NullPointerException.class,
                     NotEnoughException.class
             }
@@ -25,4 +25,9 @@ public class ${NAME}{
 public void buyGoods(Integer xx, Integer xx1){
     code context
 }
-    
+===========================================
+事务--AOP的实现方式-xml(适合大型项目)
+=========================================== 
+在代码中只需要写业务代码即可，不需要注释
+事务的实现全部在XML配置文件中，具体可看xml模板
+
