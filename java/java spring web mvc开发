@@ -1,0 +1,45 @@
+创建MVC项目的流程
+=================================================================
+需求：用户发起请求，，使用SpringMVC接收请求并处理，在页面显示一条语句
+步骤：
+1：新建maven web项目(名称：maven-archetype-webapp)
+2：加入maven依赖
+------------------------------------------------------------------
+    <!-- https://mvnrepository.com/artifact/org.springframework/spring-webmvc
+    spring mvc 依赖
+     -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-webmvc</artifactId>
+      <version>5.2.9.RELEASE</version>
+    </dependency>
+------------------------------------------------------------------
+3：注册springmvc框架中的核心对象DispatcherServlet
+------------------------------------------------------------------
+    <servlet>
+        <servlet-name>myWebMvc</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:appConfig.xml</param-value>
+        </init-param>
+        <!--        在服务器启动时创建Servlet对象-->
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>myWebMvc</servlet-name>
+<!--        url-pattern 把请求交给指定的Servlet对象，
+只有把请求交给DispatcherServlet（中央调度器）这样的请求才能使用MVC框架处理
+写法
+1.拓展名：*.xx xx就是拓展名
+2.使用“/xxx”
+-->
+        <url-pattern>*.do</url-pattern>
+    </servlet-mapping>
+4：新建jsp发起一个请求
+5：新建处理器类，处理用户的请求
+6：新建jsp页面为视图页面，显示数据和处理结果
+7：新建springmvc配置文件
+   1）声明处理器对象，让他处理用户的某个请求
+   2）声明视图解析器对象。处理视图
+8：修改处理器方法，指定使用逻辑视图名称

@@ -1,3 +1,40 @@
 idea tomcat 输出乱码
 ---------------------------------------------------------
-https://blog.csdn.net/nan_cheung/article/details/79337273
+https://blog.csdn.net/nan_cheung/article/details/79337273（这个方法行不通）
+---------------------------------------------------------
+maven下载慢的问题
+https://juejin.im/post/6844904181162049544
+---------------------------------------------------------
+右键项目，maven选项，"Open setting.xml"或"Create setting.xml"，
+在 mirrors 节点添加下面代码。
+	<mirrors>	
+		<mirror>
+            <id>alimaven</id>
+            <name>aliyun maven</name>
+            <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+            <mirrorOf>central</mirrorOf>
+        </mirror>
+
+        <mirror>
+            <id>uk</id>
+            <mirrorOf>central</mirrorOf>
+            <name>Human Readable Name for this Mirror.</name>
+            <url>http://uk.maven.org/maven2/</url>
+        </mirror>
+
+        <mirror>
+            <id>CN</id>
+            <name>OSChina Central</name>
+            <url>http://maven.oschina.net/content/groups/public/</url>
+            <mirrorOf>central</mirrorOf>
+        </mirror>
+
+        <mirror>
+            <id>nexus</id>
+            <name>internal nexus repository</name>
+            <url>http://repo.maven.apache.org/maven2</url>
+            <mirrorOf>central</mirrorOf>
+        </mirror>
+
+    </mirrors>
+
