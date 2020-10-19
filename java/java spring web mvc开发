@@ -29,17 +29,59 @@
     <servlet-mapping>
         <servlet-name>myWebMvc</servlet-name>
 <!--        url-pattern 把请求交给指定的Servlet对象，
+-->
+        <url-pattern>*.do</url-pattern>
+    </servlet-mapping>
 只有把请求交给DispatcherServlet（中央调度器）这样的请求才能使用MVC框架处理
 写法
 1.拓展名：*.xx xx就是拓展名
 2.使用“/xxx”
--->
-        <url-pattern>*.do</url-pattern>
-    </servlet-mapping>
 4：新建jsp发起一个请求
 5：新建处理器类，处理用户的请求
+    实现接口Controller中的handleRequest方法：
+    实例代码：
+------------------------------------------------------------------
+    public class MyController implements Controller {
+
+    @Override
+    public ModelAndView handleRequest(javax.servlet.http.HttpServletRequest httpServletRequest,
+                                      javax.servlet.http.HttpServletResponse httpServletResponse) throws Exception {
+        ModelAndView mv=new ModelAndView();
+        mv.addObject("msg","Hello Spring"); //要显示的信息
+        mv.setViewName("/WEB-INF/view/show.jsp"); //页面的全限定路径，在WEB-INF下可以将页面保护起来，不能被直接访问
+        return mv;
+    }
+}
+------------------------------------------------------------------
 6：新建jsp页面为视图页面，显示数据和处理结果
+------------------------------------------------------------------
+index.jsp（实例代码）
+------------------------------------------------------------------
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>MyMvc</title>
+</head>
+<body>
+    <a href="some.do">发起some.do请求</a>
+</body>
+</html>
+------------------------------------------------------------------
+show.jsp（实例代码）
+------------------------------------------------------------------
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>show</title>
+</head>
+<body>
+    显示数据
+    msg:${msg}
+</body>
+</html>
+------------------------------------------------------------------
 7：新建springmvc配置文件
    1）声明处理器对象，让他处理用户的某个请求
    2）声明视图解析器对象。处理视图
+
 8：修改处理器方法，指定使用逻辑视图名称

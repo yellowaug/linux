@@ -180,3 +180,12 @@ url-pattern :reg就是在html中action标签所需要填的内容
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
+----------------------------------------------------------------------------
+mvc 项目容器创建
+----------------------------------------------------------------------------
+<!--    声明容器对象，让容器创建处理器对象，并把请求交给这个对象
+        class:Controller全限定名称
+        id:请求uri地址，需要已“/”开头
+  -->
+    <bean id="/some.do" class="org.MyController"/>
+----------------------------------------------------------------------------
