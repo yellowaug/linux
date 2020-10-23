@@ -1,0 +1,163 @@
+spring boot 增删改查模板
+=========================================================
+注意事项
+---------------------------------------------------------
+1.controller包以及controller类必须与XXXApplication类在同一包内，否则框架无法扫描到
+例子
+src
+ |--main
+     |--java
+         |--com.jjck.xxx
+                |
+                |--controller
+                |--dao
+                |--domain
+                |service
+                XXXApplication.class
+                ServletInitializer.class
+2.mybatis的Daomapper文件必须放在资源文件夹的目录下，且必须以mapper命名，否则框架服务找到mapper.xml文件
+resource
+   |--mapper(放mapper映射文件)
+   |--static
+   |--templates
+   application.properties (配置文件，如数据库连接配置，mybatis配置)
+3.在controller类中的方法，如需要传入参数，需要注意
+  1）Get,DELETE方式在参数中如果没有@PathVariable("id")则会报空指针异常，
+  2）POST,PUT方式如同没有@RequestBody则无法读取传入的对象
+4.DAO接口文件的名称与Dao映射文件的名称必须一致，否则会报错
+5.在入口程序xxxapplication中必须加入@MapperScan("dao包的全限定名称")
+实例
+@SpringBootApplication
+@MapperScan("com.jjck.bootpart3.dao")
+public class Bootpart3Application {
+
+    public static void main(String[] args) {
+        SpringApplication.run(Bootpart3Application.class, args);
+    }
+
+}
+
+---------------------------------------------------------
+程序模板
+---------------------------------------------------------
+application.properties模板
+## 数据源配置
+spring.datasource.url=jdbc:sqlserver://10.12.3.61:1433;DatabaseName=TestDemo
+spring.datasource.username=sa
+spring.datasource.password=sa
+#spring.datasource.driver-class-name=com.mysql.jdbc.Driver
+spring.datasource.driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver
+## Mybatis 配置
+mybatis.typeAliasesPackage=com.jjck.bootpart3.domain
+mybatis.mapperLocations=classpath:mapper/*.xml
+
+pom.xml模板
+
+XXXDao.xml 增-删-改-查模板
+<mapper namespace="dao全限定路径">
+    <sql id="ColumnList"> 字段集合的写法
+        id,province_id, city_name, desc_city
+    </sql>
+    <select id="dao接口的方法名称" resultType="domainl类">
+        select
+        <include refid="ColumnList" />
+         from city
+    </select>
+    <insert id="dao接口的方法名称">
+        insert into city(
+        province_id, city_name, desc_city
+        )
+        values (#{province_id},#{city_name},#{desc_city})
+    </insert>
+    <select id="dao接口的方法名称" resultType="City">
+        select
+        <include refid="ColumnList" />
+        from city where id=#{id}
+    </select>
+    <update id="dao接口的方法名称">
+        update city
+        set
+        <if test="province_id!=null">
+             province_id=#{province_id},
+        </if>
+        <if test="city_name!=null">
+            city_name=#{city_name},
+        </if>
+        <if test="desc_city!=null">
+            desc_city=#{desc_city}
+        </if>
+        where id=#{id}
+    </update>
+    <delete id="dao接口的方法名称" parameterType="java.lang.Integer">
+        delete from city where id=#{id}
+    </delete>
+</mapper>
+
+XXXController模板
+
+@RestController                  <---让在框架注册controller类
+@RequestMapping("/api/city")    <---URL 映射时，用于绑定请求参数到方法参数
+public class CityController {
+    @Autowired <---省略GET SET方法
+    private CityService cityService;
+
+
+//    Get,DELETE方法在参数中如果没有@PathVariable("id")则会报空指针异常，
+
+    @RequestMapping(value = "/")
+    public List<City> getAllCity(){
+        return cityService.getAllCity();
+    }
+    @RequestMapping(value = "/",method = RequestMethod.POST)
+    public String insertCity(@RequestBody City city){
+
+        int code=cityService.insertCity(city);
+        ...
+        业务代码
+        ...
+    }
+    @RequestMapping("/{id}")
+    public City getCity(@PathVariable("id") Integer id){
+        return this.cityService.getCity(id);
+    }
+    @RequestMapping(value = "/",method = RequestMethod.PUT)
+    public String upCity(@RequestBody City city){
+        int code =cityService.updataCity(city);
+        ...
+        业务代码
+        ...
+    }
+    @RequestMapping(value = "/{id}",method = RequestMethod.DELETE)
+    public String deleteCity(@PathVariable("id") Integer id){
+        int code =cityService.deleteCity(id);
+        ...
+        业务代码
+        ...
+    }
+XXXDao接口模板
+
+public interface CityDao {
+
+    List<City> getList();
+    int insertData(City city);
+//    City getSingeData(@Param("id") Integer id);
+//    有@Param和没有@Param的区别似乎不大，程序都可以正常执行
+    City getSingeData(Integer id);
+    int updateData(City city);
+    int deleteData(int id);
+}
+service 接口以及实现模板
+public interface CityService {
+...
+增删改查业务接口
+...
+
+}
+@Service
+public class CityServiceImpl implements CityService {
+    @Autowired
+    private CityDao cityDao;
+...
+增删改查的实现方法
+...
+}
