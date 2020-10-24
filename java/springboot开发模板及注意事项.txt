@@ -1,5 +1,11 @@
-spring boot 增删改查模板
+spring boot 程序模板
+教程URL http://www.spring4all.com/article/246
 =========================================================
+遇到的问题
+1.swagger2显示API列表会显示出一些无用的接口，如HEAD，OPTIONS,PATH请求方式
+2.swagger2默认的启动路径有点长，需要更改
+3.swagger2默认启动页面，要修改很麻烦，所以还是用默认的吧
+---------------------------------------------------------
 注意事项
 ---------------------------------------------------------
 1.controller包以及controller类必须与XXXApplication类在同一包内，否则框架无法扫描到
@@ -36,11 +42,17 @@ public class Bootpart3Application {
     }
 
 }
-
+6.在使用Swagger2时，最好不要在XXController类前使用@RequestMapping("/api/city")这样的注释，
+如果使用会导致Swagger显示包括一个URL的所有请求方式，这样会使得页面杂乱
+7.在控制类方法中使用@GetMapping @PostMapping代替@RequestMapping 这样会使页面内容显示有序。
+8.swagger2默认路径http://xxx.com/xxx/swagger-ui/index.html
 ---------------------------------------------------------
 程序模板
 ---------------------------------------------------------
+增删改查的业务模板
+---------------------------------------------------------
 application.properties模板
+---------------------------------------------------------
 ## 数据源配置
 spring.datasource.url=jdbc:sqlserver://10.12.3.61:1433;DatabaseName=TestDemo
 spring.datasource.username=sa
@@ -51,6 +63,26 @@ spring.datasource.driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver
 mybatis.typeAliasesPackage=com.jjck.bootpart3.domain
 mybatis.mapperLocations=classpath:mapper/*.xml
 
+redis配置文件模板
+# Redis数据库索引（默认为0）
+spring.redis.database=0
+# Redis服务器地址
+spring.redis.host=10.12.3.61
+# Redis服务器连接端口
+spring.redis.port=6379
+# Redis服务器连接密码（默认为空）
+#spring.redis.password=
+# 连接池最大连接数（使用负值表示没有限制）
+spring.redis.pool.max-active=8
+# 连接池最大阻塞等待时间（使用负值表示没有限制）
+spring.redis.pool.max-wait=-1
+# 连接池中的最大空闲连接
+spring.redis.pool.max-idle=8
+# 连接池中的最小空闲连接
+spring.redis.pool.min-idle=0
+# 连接超时时间（毫秒）
+spring.redis.timeout=0
+---------------------------------------------------------
 
 XXXDao.xml 增-删-改-查模板
 <mapper namespace="dao全限定路径">
@@ -160,6 +192,55 @@ public class CityServiceImpl implements CityService {
 增删改查的实现方法
 ...
 }
+---------------------------------------------------------------------------
+swagger2程序模板：
+文档地址：
+https://developer.ibm.com/zh/articles/j-using-swagger-in-a-spring-boot-project/
+---------------------------------------------------------------------------
+
+增加Swagger2类，以下程序整段复制即可
+@Configuration
+@EnableSwagger2
+public class Swagger2 {
+
+
+    private ApiInfo apiInfo(){
+        return new ApiInfoBuilder().title("test resfulapi info")
+                .description("test")
+                .termsOfServiceUrl("http://127.0.0.1:8080")
+                .build();
+    }
+    @Bean
+    public Docket createRestApi(){
+        return new Docket(DocumentationType.SWAGGER_2)
+                .apiInfo(apiInfo())
+                .select()
+                .apis(RequestHandlerSelectors.basePackage("com.jjck.bootpart3.controller"))
+                .paths(PathSelectors.any())
+                .build();
+    }
+在实体类中添加注释：@ApiModel(value = "xxx",description = "Xxx")
+实例
+@ApiModel(value = "City",description = "城市")
+public class City {
+    @ApiModelProperty("主键ID")
+    private Integer id;
+    @ApiModelProperty("城市编号")
+    private Integer province_id;
+    @ApiModelProperty("城市名称")
+    private String city_name;
+    @ApiModelProperty("城市描述信息")
+    private String desc_city;
+}
+在控制类中添加注释：
+@RequestMapping("/api/city")
+public class XXXController{
+    @ApiOperation(value = "xxx",notes = "xxx")
+    @GetMapping(value = "/")
+    public List<City> getAllCity(){  <--------------业务方法
+        return cityService.getAllCity();
+    }
+}
 ---------------------------------------------------------
 pom.xml模板
 ---------------------------------------------------------
@@ -182,4 +263,12 @@ pom.xml模板
         <groupId>io.springfox</groupId>
         <artifactId>springfox-boot-starter</artifactId>
         <version>3.0.0</version>
+    </dependency>
+
+        <!-- redis依赖
+        https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-redis -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-redis</artifactId>
+        <version>2.3.4.RELEASE</version>
     </dependency>
