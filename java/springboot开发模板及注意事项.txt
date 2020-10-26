@@ -5,6 +5,7 @@ spring boot 程序模板
 1.swagger2显示API列表会显示出一些无用的接口，如HEAD，OPTIONS,PATH请求方式
 2.swagger2默认的启动路径有点长，需要更改
 3.swagger2默认启动页面，要修改很麻烦，所以还是用默认的吧
+4.在spring-mybatis-Druid配置多连接时，无法创建DAO类或者实体类
 ---------------------------------------------------------
 注意事项
 ---------------------------------------------------------
@@ -46,6 +47,7 @@ public class Bootpart3Application {
 如果使用会导致Swagger显示包括一个URL的所有请求方式，这样会使得页面杂乱
 7.在控制类方法中使用@GetMapping @PostMapping代替@RequestMapping 这样会使页面内容显示有序。
 8.swagger2默认路径http://xxx.com/xxx/swagger-ui/index.html
+9.在配置spring-mybatis-Druid多数据库时，XXXDAO.xml文件中resultType标签必须是 resultType="实体类的全限定名称"，否则报错
 ---------------------------------------------------------
 程序模板
 ---------------------------------------------------------
