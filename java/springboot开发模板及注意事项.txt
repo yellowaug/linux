@@ -221,6 +221,17 @@ public class Swagger2 {
                 .paths(PathSelectors.any())
                 .build();
     }
+或者使用这段
+@SpringBootApplication
+@MapperScan("com.jjck.bootpart3.dao")
+@Enableopenapi
+public class Bootpart3Application {
+
+    public static void main(String[] args) {
+        SpringApplication.run(Bootpart3Application.class, args);
+    }
+
+}
 在实体类中添加注释：@ApiModel(value = "xxx",description = "Xxx")
 实例
 @ApiModel(value = "City",description = "城市")
@@ -243,6 +254,101 @@ public class XXXController{
         return cityService.getAllCity();
     }
 }
+---------------------------------------------------------------------------
+多数据库连接配置类模板
+文档地址：
+---------------------------------------------------------------------------
+从库
+@Configuration
+@MapperScan(basePackages = ClusterDataSourceConfig.PACKAGE,sqlSessionFactoryRef = "clusterSqlSessionFactory")
+public class ClusterDataSourceConfig {
+    // 精确到 cluster 目录，以便跟其他数据源隔离
+    static final String PACKAGE = "com.jjck.mutilsource.dao.cluster";  //包的全限定名称
+    static final String MAPPER_LOCATION = "classpath:mapper/cluster/*.xml";  //xml文件的路径
+    @Value("${cluster.datasource.url}")
+    private String url;
+
+    @Value("${cluster.datasource.username}")
+    private String user;
+
+    @Value("${cluster.datasource.password}")
+    private String password;
+
+    @Value("${cluster.datasource.driverClassName}")
+    private String driverClass;
+
+    @Bean(name = "clusterDataSource")
+    public DataSource clusterDataSource(){
+        DruidDataSource dataSource=new DruidDataSource();
+        dataSource.setDriverClassName(this.driverClass);
+        dataSource.setUrl(this.url);
+        dataSource.setUsername(this.user);
+        dataSource.setPassword(this.password);
+        
+        return dataSource;
+    }
+    @Bean(name = "clusterDataSourceTransactionManager")
+    public DataSourceTransactionManager clusterDataSourceTransactionManager(){
+        return new DataSourceTransactionManager(clusterDataSource());
+    }
+
+    @Bean(name = "clusterSqlSessionFactory")
+    public SqlSessionFactory clusterSqlSessionFactory(@Qualifier("clusterDataSource") DataSource clusterDataSource)
+        throws Exception{
+        final SqlSessionFactoryBean sessionFactory = new SqlSessionFactoryBean();
+        sessionFactory.setDataSource(clusterDataSource);
+        sessionFactory.setMapperLocations(new PathMatchingResourcePatternResolver()
+                .getResources(ClusterDataSourceConfig.MAPPER_LOCATION));
+        return sessionFactory.getObject();
+    }
+}
+
+主库配置类
+@Configuration
+@MapperScan(basePackages = MasterDataSourceConfig.PACKAGE,sqlSessionFactoryRef = "masterSqlSessionFactory")
+public class MasterDataSourceConfig {
+    static final String PACKAGE = "com.jjck.mutilsource.dao.master"; //包的全限定名称
+    static final String MAPPER_LOCATION = "classpath:mapper/master/*.xml"; //xml文件的路径
+    @Value("${master.datasource.url}")
+    private String url;
+    @Value("${master.datasource.username}")
+    private String user;
+    @Value("${master.datasource.password}")
+    private String password;
+    @Value("${master.datasource.driverClassName}")
+    private String driverClass;
+
+    @Bean(name = "masterDataSource")
+    @Primary
+    public DataSource masterDataSource(){
+        DruidDataSource dataSource=new DruidDataSource();
+        dataSource.setDriverClassName(this.driverClass);
+        dataSource.setUrl(this.url);
+        dataSource.setUsername(this.user);
+        dataSource.setPassword(this.password);
+        return dataSource;
+    }
+    @Bean(name = "masterTransactionManager")
+    @Primary
+    public DataSourceTransactionManager masterTransactionManager(){
+        return new DataSourceTransactionManager(masterDataSource());
+    }
+    @Bean(name = "masterSqlSessionFactory")
+    @Primary
+    public SqlSessionFactory masterSqlSessionFactory(@Qualifier("masterDataSource") DataSource masterDataSource) throws Exception{
+        final SqlSessionFactoryBean sessionFactoryBean=new SqlSessionFactoryBean();
+        sessionFactoryBean.setDataSource(masterDataSource);
+        sessionFactoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(MasterDataSourceConfig.MAPPER_LOCATION));
+        return sessionFactoryBean.getObject();
+    }
+
+}
+打包部署
+---------------------------------------------------------
+IDEA生成war包
+url:https://www.jianshu.com/p/0da335cbc581
+---------------------------------------------------------
+
 ---------------------------------------------------------
 pom.xml模板
 ---------------------------------------------------------
@@ -273,4 +379,10 @@ pom.xml模板
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-data-redis</artifactId>
         <version>2.3.4.RELEASE</version>
+    </dependency>
+多数据库连接所需依赖 druid
+    <dependency>
+        <groupId>com.alibaba</groupId>
+        <artifactId>druid</artifactId>
+        <version>1.0.18</version>
     </dependency>
