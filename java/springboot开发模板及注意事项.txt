@@ -48,6 +48,7 @@ public class Bootpart3Application {
 7.在控制类方法中使用@GetMapping @PostMapping代替@RequestMapping 这样会使页面内容显示有序。
 8.swagger2默认路径http://xxx.com/xxx/swagger-ui/index.html
 9.在配置spring-mybatis-Druid多数据库时，XXXDAO.xml文件中resultType标签必须是 resultType="实体类的全限定名称"，否则报错
+10.Swagger2的配置类名称必须叫Swagger2否则会无法实例化对象，导致页面无法访问
 ---------------------------------------------------------
 程序模板
 ---------------------------------------------------------
@@ -355,17 +356,23 @@ pom.xml模板
     <!--
     swagger2所需依赖
     https://mvnrepository.com/artifact/io.springfox/springfox-swagger2 -->
-    <dependency>
-        <groupId>io.springfox</groupId>
-        <artifactId>springfox-swagger2</artifactId>
-        <version>2.10.5</version>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/io.springfox/springfox-swagger-ui -->
-    <dependency>
-        <groupId>io.springfox</groupId>
-        <artifactId>springfox-swagger-ui</artifactId>
-        <version>2.10.5</version>
-    </dependency>
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/io.springfox/springfox-swagger2 -->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/io.springfox/springfox-boot-starter -->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-boot-starter</artifactId>
+            <version>3.0.0</version>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/io.springfox/springfox-boot-starter -->
     <dependency>
         <groupId>io.springfox</groupId>
