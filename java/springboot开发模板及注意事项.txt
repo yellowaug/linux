@@ -373,12 +373,7 @@ pom.xml模板
             <artifactId>springfox-boot-starter</artifactId>
             <version>3.0.0</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/io.springfox/springfox-boot-starter -->
-    <dependency>
-        <groupId>io.springfox</groupId>
-        <artifactId>springfox-boot-starter</artifactId>
-        <version>3.0.0</version>
-    </dependency>
+
 
         <!-- redis依赖
         https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-redis -->
@@ -387,9 +382,17 @@ pom.xml模板
         <artifactId>spring-boot-starter-data-redis</artifactId>
         <version>2.3.4.RELEASE</version>
     </dependency>
-多数据库连接所需依赖 druid
-    <dependency>
-        <groupId>com.alibaba</groupId>
-        <artifactId>druid</artifactId>
-        <version>1.0.18</version>
-    </dependency>
+
+        <!-- Spring Boot Mybatis 依赖 -->
+        <dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+        <!--多数据源连接依赖
+         https://mvnrepository.com/artifact/com.alibaba/druid -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+            <version>1.2.1</version>
+        </dependency>
