@@ -86,8 +86,8 @@ spring.redis.pool.min-idle=0
 # 连接超时时间（毫秒）
 spring.redis.timeout=0
 ---------------------------------------------------------
-
-XXXDao.xml 增-删-改-查模板
+XXXDao.xml 增-删-改-查模板，sql Mapper文件模板
+---------------------------------------------------------
 <mapper namespace="dao全限定路径">
     <sql id="ColumnList"> 字段集合的写法
         id,province_id, city_name, desc_city
@@ -126,9 +126,39 @@ XXXDao.xml 增-删-改-查模板
         delete from city where id=#{id}
     </delete>
 </mapper>
+---------------------------------------------------------
+where标签的用法以及 &gt; 是> | &lt;是<
+---------------------------------------------------------
+ <select id="serachFormalOrderOfDate" resultType="com.jjck.javamnm.Domain.OldMnm.FormalOrder">
+        select top 1000 * from FormalOrder
+        <where>
+            <if test="orderCode!=null">
+                fCode=#{orderCode}
+            </if>
 
+            <if test="cusName!=null">
+                and fCustName=#{cusName}
+            </if>
+
+            <if test="docter!=null">
+                and  fDoctor=#{docter}
+            </if>
+
+            <if test="patient!=null">
+                and fPatient=#{patient}
+            </if>
+
+            <if test="orderStartDate!=null">
+                and  fDate &gt;=#{orderStartDate}
+            </if>
+            <if test="orderEndDate != null">
+                and fDate &lt;=#{orderEndDate}
+            </if>
+        </where>
+    </select>
+---------------------------------------------------------
 XXXController模板
-
+---------------------------------------------------------
 @RestController                  <---让在框架注册controller类
 @RequestMapping("/api/city")    <---URL 映射时，用于绑定请求参数到方法参数
 public class CityController {
@@ -195,6 +225,39 @@ public class CityServiceImpl implements CityService {
 增删改查的实现方法
 ...
 }
+---------------------------------------------------------------------------
+Tomcat+spring boot 后端解决跨域问题
+解决跨域请求问题，基本上每个后端项目都必须要配置，固定配置文件
+Url：https://blog.csdn.net/weixin_42556829/article/details/103890824?
+utm_medium=distribute.pc_relevant_t0.none-task-blog-BlogCommendFromMachineLearnPai2-1.channel_param&depth_1-utm_source=distribute.pc_relevant_t0.none-task-blog-BlogCommendFromMachineLearnPai2-1.channel_param
+---------------------------------------------------------------------------
+package com.jjck.javamnm.Config;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+/*
+允许全局跨域设置
+ */
+
+@Configuration
+public class CorsConfig {
+    private CorsConfiguration buildConfig() {
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+        corsConfiguration.addAllowedOrigin("*"); //允许任何域名
+        corsConfiguration.addAllowedHeader("*"); //允许任何头
+        corsConfiguration.addAllowedMethod("*"); //允许任何方法
+        return corsConfiguration;
+    }
+    @Bean
+    public CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", buildConfig()); //注册
+        return new CorsFilter(source);
+    }
+}
+
 ---------------------------------------------------------------------------
 swagger2程序模板：
 文档地址：
