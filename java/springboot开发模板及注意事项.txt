@@ -1,6 +1,23 @@
 spring boot 程序模板
 教程URL http://www.spring4all.com/article/246
 =========================================================
+                    目          录
+=========================================================
+1.遇到的问题
+2.注意事项
+3.程序模板
+3.1 application.properties模板
+3.2 XXXDao.xml 增-删-改-查模板，sql Mapper文件模板
+3.3 XXXController模板
+3.4 XXXDao接口模板
+3.5 Tomcat+spring boot 后端解决跨域问题
+3.6 swagger2程序模板
+3.7 多数据库连接配置类模板
+3.8 Resttempare Https请求模板Resttemplate
+3.9 Resttemplate POST，get请求模板
+4.打包部署
+5.pom.xml模板
+=========================================================
 遇到的问题
 1.swagger2显示API列表会显示出一些无用的接口，如HEAD，OPTIONS,PATH请求方式
 2.swagger2默认的启动路径有点长，需要更改
@@ -199,8 +216,9 @@ public class CityController {
         业务代码
         ...
     }
+---------------------------------------------------------
 XXXDao接口模板
-
+---------------------------------------------------------
 public interface CityDao {
 
     List<City> getList();
@@ -408,6 +426,160 @@ public class MasterDataSourceConfig {
     }
 
 }
+---------------------------------------------------------------------------
+Resttempare Https请求模板Resttemplate 固定样式，直接复制粘贴即可
+文档地址：https://blog.csdn.net/qq_35115257/article/details/80627386
+---------------------------------------------------------------------------
+package com.jjck.javamnm.Service.Iot.https;
+
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+
+import javax.net.ssl.*;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.Socket;
+
+import java.security.cert.X509Certificate;
+
+public class HttpsClientRequestFactory extends SimpleClientHttpRequestFactory {
+    @Override
+    protected void prepareConnection(HttpURLConnection connection, String httpMethod)  {
+        try {
+            if (!(connection instanceof HttpsURLConnection)) {
+                throw new RuntimeException("An instance of HttpsURLConnection is expected");
+            }
+
+            HttpsURLConnection httpsConnection = (HttpsURLConnection) connection;
+
+            TrustManager[] trustAllCerts = new TrustManager[]{
+                    new X509TrustManager() {
+                        @Override
+                        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                            return null;
+                        }
+                        @Override
+                        public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                        }
+                        @Override
+                        public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                        }
+
+                    }
+            };
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+            httpsConnection.setSSLSocketFactory(new MyCustomSSLSocketFactory(sslContext.getSocketFactory()));
+
+            httpsConnection.setHostnameVerifier(new HostnameVerifier() {
+                @Override
+                public boolean verify(String s, SSLSession sslSession) {
+                    return true;
+                }
+            });
+
+            super.prepareConnection(httpsConnection, httpMethod);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private static class MyCustomSSLSocketFactory extends SSLSocketFactory {
+        private final SSLSocketFactory delegate;
+
+        public MyCustomSSLSocketFactory(SSLSocketFactory delegate) {
+            this.delegate = delegate;
+        }
+
+        // 返回默认启用的密码套件。除非一个列表启用，对SSL连接的握手会使用这些密码套件。
+        // 这些默认的服务的最低质量要求保密保护和服务器身份验证
+        @Override
+        public String[] getDefaultCipherSuites() {
+            return delegate.getDefaultCipherSuites();
+        }
+
+        // 返回的密码套件可用于SSL连接启用的名字
+        @Override
+        public String[] getSupportedCipherSuites() {
+            return delegate.getSupportedCipherSuites();
+        }
+
+
+        @Override
+        public Socket createSocket(final Socket socket, final String host, final int port,
+                                   final boolean autoClose) throws IOException {
+            final Socket underlyingSocket = delegate.createSocket(socket, host, port, autoClose);
+            return overrideProtocol(underlyingSocket);
+        }
+
+
+        @Override
+        public Socket createSocket(final String host, final int port) throws IOException {
+            final Socket underlyingSocket = delegate.createSocket(host, port);
+            return overrideProtocol(underlyingSocket);
+        }
+
+        @Override
+        public Socket createSocket(final String host, final int port, final InetAddress localAddress,
+                                   final int localPort) throws
+                IOException {
+            final Socket underlyingSocket = delegate.createSocket(host, port, localAddress, localPort);
+            return overrideProtocol(underlyingSocket);
+        }
+
+        @Override
+        public Socket createSocket(final InetAddress host, final int port) throws IOException {
+            final Socket underlyingSocket = delegate.createSocket(host, port);
+            return overrideProtocol(underlyingSocket);
+        }
+
+        @Override
+        public Socket createSocket(final InetAddress host, final int port, final InetAddress localAddress,
+                                   final int localPort) throws
+                IOException {
+            final Socket underlyingSocket = delegate.createSocket(host, port, localAddress, localPort);
+            return overrideProtocol(underlyingSocket);
+        }
+
+        private Socket overrideProtocol(final Socket socket) {
+            if (!(socket instanceof SSLSocket)) {
+                throw new RuntimeException("An instance of SSLSocket is expected");
+            }
+            ((SSLSocket) socket).setEnabledProtocols(new String[]{"TLSv1"});
+            return socket;
+        }
+    }
+
+}
+
+---------------------------------------------------------------------------
+Resttemplate POST，get请求模板：
+文档地址：https://blog.csdn.net/qq_35115257/article/details/80627386
+---------------------------------------------------------------------------
+ RestTemplate restTemplate=new RestTemplate(new HttpsClientRequestFactory());
+        // -------------------------------> 解决(响应数据可能)中文乱码 的问题
+        List<HttpMessageConverter<?>> converterList=restTemplate.getMessageConverters();
+        converterList.remove(1);// 移除原来的转换器
+        // 设置字符编码为utf-8
+        HttpMessageConverter<?> converter = new StringHttpMessageConverter(StandardCharsets.UTF_8);
+        converterList.add(1, converter);// 添加新的转换器(注:convert顺序错误会导致失败)
+        restTemplate.setMessageConverters(converterList);
+        String url="https://10.11.10.2/api/v1/accessToken";
+        //装载请求头，构建请求内容
+        HttpHeaders httpHeaders=new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        MultiValueMap<String,String> httpBody=new LinkedMultiValueMap<>();
+
+        httpBody.add("api_token",this.token);
+//        httpBody.add("api_token","823936341d68ac379c95c0480563ef4e");
+        JSONObject jsonObject=JSONObject.fromObject(httpBody.toSingleValueMap());
+//      装载HTTP请求
+        HttpEntity<String> request=new HttpEntity<>(jsonObject.toString(),httpHeaders);
+        //发起POST请求
+        ResponseEntity<String> response=restTemplate.postForEntity(url,request,String.class);
+        JSONObject resultJsonObj=JSONObject.fromObject(response.getBody());
+---------------------------------------------------------------------------
 打包部署
 ---------------------------------------------------------
 IDEA生成war包
