@@ -7,7 +7,7 @@ identity(1,1) 从1开始自增长，每次+1
 primary key 设为主键
 =====================================================================
 建表：
-create table 表明
+create table 表名
 (
  id int identity(1,1) primary key not null,
  字段1 int not null,
