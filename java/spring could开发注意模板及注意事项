@@ -1,0 +1,55 @@
+1.常见报错
+1.1 spring boot 版本不匹配或者有问题导致项目无法构建
+2.代码模板
+2.1 搭建Eureka服务注册中心
+3.pom.xml文件常用依赖
+============================================================
+1.常见报错
+============================================================
+------------------------------------------------------------
+1.1注意版本，在导入spring boot版本时，选择release版本，否则容易踩坑
+------------------------------------------------------------
+============================================================
+2.代码模板
+------------------------------------------------------------
+2.1 搭建Eureka服务注册中心
+在启动项写入@EnableEurekaServer
+------------------------------------------------------------
+============================================================
+3.pom.xml文件常用依赖
+============================================================
+    spring boot 基础依赖
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-tomcat</artifactId>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-test</artifactId>
+        <scope>test</scope>
+        <exclusions>
+            <exclusion>
+                <groupId>org.junit.vintage</groupId>
+                <artifactId>junit-vintage-engine</artifactId>
+            </exclusion>
+        </exclusions>
+    </dependency>
+    注册中心依赖
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+        <version>2.2.6.RELEASE</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-dependencies -->
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-dependencies</artifactId>
+        <version>Hoxton.SR9</version>
+        <type>pom</type>
+        <scope>runtime</scope>
+    </dependency>

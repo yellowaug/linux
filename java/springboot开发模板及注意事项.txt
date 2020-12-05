@@ -15,6 +15,7 @@ spring boot 程序模板
 3.7 多数据库连接配置类模板
 3.8 Resttempare Https请求模板Resttemplate
 3.9 Resttemplate POST，get请求模板
+3.10 spring boot开启异步
 4.打包部署
 5.pom.xml模板
 =========================================================
@@ -580,6 +581,71 @@ Resttemplate POST，get请求模板：
         ResponseEntity<String> response=restTemplate.postForEntity(url,request,String.class);
         JSONObject resultJsonObj=JSONObject.fromObject(response.getBody());
 ---------------------------------------------------------------------------
+3.10 spring boot开启异步
+http://c.biancheng.net/view/5316.html
+---------------------------------------------------------------------------
+示例异步方法
+@Async
+public void saveLog() {
+    System.err.println(Thread.currentThread().getName());
+}
+最后在启动类上开启异步任务的执行，添加 @EnableAsync 即可
+@SpringBootApplication
+@EnableAsync
+public class CouldDemoApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(CouldDemoApplication.class, args);
+	}
+
+}
+关于多线程的配置
+@Configuration
+@ConfigurationProperties(prefix = "spring.task.pool")
+public class TaskThreadPoolConfig {
+    // 核心线程数
+    private int corePoolSize = 5;
+    // 最大线程数
+    private int maxPoolSize = 50;
+    // 线程池维护线程所允许的空闲时间
+    private int keepAliveSeconds = 60;
+    // 队列长度
+    private int queueCapacity = 10000;
+    // 线程名称前缀
+    private String threadNamePrefix = "FSH-AsyncTask-";
+    // get set ...
+}
+然后我们重新定义线程池的配置，代码如下所示。
+@Configuration
+public class AsyncTaskExecutePool implements AsyncConfigurer {
+    private Logger logger = LoggerFactory.getLogger(AsyncTaskExecutePool.class);
+    @Autowired
+    private TaskThreadPoolConfig config;
+    @Override
+    public Executor getAsyncExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(config.getCorePoolSize());
+        executor.setMaxPoolSize(config.getMaxPoolSize());
+        executor.setQueueCapacity(config.getQueueCapacity());
+        executor.setKeepAliveSeconds(config.getKeepAliveSeconds());
+        executor.setThreadNamePrefix(config.getThreadNamePrefix());
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.initia lize();
+        return executor;
+    }
+    @Override
+    public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
+        // 异步任务中异常处理
+        return new AsyncUncaughtExceptionHandler() {
+            @Override
+            public void handleUncaughtException(Throwable arg0, Method arg1, Object... arg2) {
+                logger.error("==========================" + arg0.getMessage() + "=======================", arg0);
+                logger.error("exception method:" + arg1.getName());
+            }
+        };
+    }
+}
+---------------------------------------------------------------------------
 打包部署
 ---------------------------------------------------------
 IDEA生成war包
@@ -632,3 +698,10 @@ pom.xml模板
             <artifactId>druid</artifactId>
             <version>1.2.1</version>
         </dependency>
+        <!-- spring boot状态监控
+		https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-actuator -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+			<version>2.3.5.RELEASE</version>
+		</dependency>
