@@ -1,5 +1,7 @@
 1.常见报错
 1.1 spring boot 版本不匹配或者有问题导致项目无法构建
+1.2 当spring cloud 部署在tomcat时需要注意，注册中心报错：连接到http://localhost:8761超时
+1.3 部署在tomcat时，消费端调用接口时报错：java.lang.IllegalStateException: No instances available for “localhost”
 2.代码模板
 2.1 搭建Eureka服务注册中心
 3.pom.xml文件常用依赖
@@ -8,6 +10,31 @@
 ============================================================
 ------------------------------------------------------------
 1.1注意版本，在导入spring boot版本时，选择release版本，否则容易踩坑
+------------------------------------------------------------
+1.2当spring cloud 部署在tomcat时需要注意，注册中心报错：连接到http://localhost:8761超时
+
+三个端的配置文件均要设置默认服务器端URL
+如下：
+spring.application.name=eureka-server
+server.port=8080
+eureka.client.serviceUrl.defaultZone=http://localhost:8080/jjckregedit/eureka/
+# 由于该应用为注册中心, 所以设置为false, 代表不向注册中心注册自己
+eureka.client.register-with-eureka=false
+# 由于注册中心的职责就是维护服务实例, 它并不需要去检索服务, 所以也设置为 false
+eureka.client.fetch-registry=false
+------------------------------------------------------------
+1.3部署在tomcat时，消费端调用接口时报错：java.lang.IllegalStateException: No instances available for “localhost”
+需要注意消费端restTemplate方法调用实例的名称，是否和网页上的一致，注意，这里是区分大小写的
+@RestController
+public class MyController {
+    @Autowired
+    private RestTemplate restTemplate;
+    @GetMapping("/callhello")
+    public String callHello(){
+        return this.restTemplate.getForObject("http://localhost/jjckServer_war_exploded/hello",String.class); <-----报错
+//        return this.restTemplate.getForObject("http://EUREKA-CLIENT-USER-SERVICE/jjckServer_war_exploded/hello",String.class); <---正常运行(注意区分大小写)
+    }
+}
 ------------------------------------------------------------
 ============================================================
 2.代码模板
